@@ -71,68 +71,68 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
       }
   }
 
-    // Validation rules for table elements
-    public $validate = array(
-        'co_provisioning_target_id' => array(
-            'rule' => 'numeric',
-            'required' => true,
-            'message' => 'A CO PROVISIONING TARGET ID must be provided'
-        ),
-        'type' => array(
-            'rule' => array(
-                'inList',
-                array(
-                    EntitlementProvisionerDBDriverTypeEnum::Mysql,
-                    EntitlementProvisionerDBDriverTypeEnum::Postgres
-                )
-            ),
-            'required' => true
-        ),
-        'hostname' => array(
-            'rule' => 'notBlank',
-            'required' => true,
-            'allowEmpty' => false
-        ),
-        'port' => array(
-            'numeric' => array(
-                'rule' => 'naturalNumber',
-                'message' => 'Please provide the number of DB port',
-                'required' => false,
-                'allowEmpty' => true,
-                'last' => 'true',
-            ),
-            'valid_range' => array(
-                'rule' => array('range', 1024, 65535),
-                'message' => 'Port must be between 1024-65535',
-                'required' => false,
-                'allowEmpty' => true,
-                'last' => 'true',
-            ),
-        ),
-        'username' => array(
-            'rule' => 'notBlank',
-            'required' => false,
-            'allowEmpty' => true
-        ),
-        'password' => array(
-            'rule' => 'notBlank',
-            'required' => false,
-            'allowEmpty' => true
-        ),
-        // 'database' is a MySQL reserved keyword
-        'databas' => array(
-            'rule' => 'notBlank',
-            'required' => false,
-            'allowEmpty' => true
-        ),
-        'persistent' => array(
-            'rule' => 'boolean',
-            'required' => true,
-            'allowEmpty' => false
-        ),
-        'encoding' => array(
-            'rule' => array(
-                'inList',
+  // Validation rules for table elements
+  public $validate = array(
+    'co_provisioning_target_id' => array(
+      'rule' => 'numeric',
+      'required' => true,
+      'message' => 'A CO PROVISIONING TARGET ID must be provided'
+    ),
+    'type' => array(
+      'rule' => array(
+        'inList',
+        array(
+          EntitlementProvisionerDBDriverTypeEnum::Mysql,
+          EntitlementProvisionerDBDriverTypeEnum::Postgres
+        )
+      ),
+      'required' => true
+    ),
+    'hostname' => array(
+      'rule' => 'notBlank',
+      'required' => true,
+      'allowEmpty' => false
+    ),
+    'port' => array(
+      'numeric' => array(
+        'rule' => 'naturalNumber',
+        'message' => 'Please provide the number of DB port',
+        'required' => false,
+        'allowEmpty' => true,
+        'last' => 'true',
+      ),
+      'valid_range' => array(
+        'rule' => array('range', 1024, 65535),
+        'message' => 'Port must be between 1024-65535',
+        'required' => false,
+        'allowEmpty' => true,
+        'last' => 'true',
+      ),
+    ),
+    'username' => array(
+      'rule' => 'notBlank',
+      'required' => false,
+      'allowEmpty' => true
+    ),
+    'password' => array(
+      'rule' => 'notBlank',
+      'required' => false,
+      'allowEmpty' => true
+    ),
+    // 'database' is a MySQL reserved keyword
+    'databas' => array(
+      'rule' => 'notBlank',
+      'required' => false,
+      'allowEmpty' => true
+    ),
+    'persistent' => array(
+      'rule' => 'boolean',
+      'required' => true,
+      'allowEmpty' => false
+    ),
+    'encoding' => array(
+      'rule' => array(
+        'inList',
         array(
           EntitlementProvisionerDBEncodingTypeEnum::utf_8,
           EntitlementProvisionerDBEncodingTypeEnum::iso_8859_7,
@@ -175,7 +175,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
       'required' => false,
       'allowEmpty' => true
     ),
-    );
+  );
 
     /**
      * Establish a connection (via Cake's ConnectionManager) to the specified SQL server.
@@ -185,36 +185,15 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
      * @throws InvalidArgumentException   Plugins Configuration is not valid
      * @throws MissingConnectionException The database connection failed
      */
-    /*
+    
     public function connect($coId, $dbconfig = array())
     {
-        // Get our connection information
-        $args = array();
-        $args['conditions']['RciamStatsViewer.co_id'] = $coId;
-        $args['contain'] = false;
-
-        $rciamstatsviewer = $this->find('first', $args);
-
+       
         if (
-            empty($rciamstatsviewer)
-            && empty($dbconfig)
+            empty($dbconfig)
         ) {
             throw new InvalidArgumentException(_txt('er.notfound', array(_txt('ct.rciam_stats_viewers.1'), $coId)));
-        }
-
-        Configure::write('Security.useOpenSsl', true);
-        if (empty($dbconfig)) {
-            $dbconfig = array(
-                'datasource' => 'Database/' . EntitlementProvisionerDBDriverTypeEnum::type[$rciamstatsviewer['RciamStatsViewer']['type']],
-                'persistent' => $rciamstatsviewer['RciamStatsViewer']['persistent'],
-                'host'       => $rciamstatsviewer['RciamStatsViewer']['hostname'],
-                'login'      => $rciamstatsviewer['RciamStatsViewer']['username'],
-                'password'   => Security::decrypt(base64_decode($rciamstatsviewer['RciamStatsViewer']['password']), Configure::read('Security.salt')),
-                'database'   => $rciamstatsviewer['RciamStatsViewer']['databas'],
-                'encoding'   => $rciamstatsviewer['RciamStatsViewer']['encoding'],
-                'port'       => $rciamstatsviewer['RciamStatsViewer']['port'],
-            );
-        }
+        }   
 
         // Port Value
         if (empty($dbconfig['port'])) {
@@ -230,7 +209,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
 
         return $datasource;
     }
-*/
+
     /**
      * Provision for the specified CO Person.
      *

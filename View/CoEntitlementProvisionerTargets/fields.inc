@@ -75,7 +75,7 @@ $token_key = $this->request->params['_Token']['key'];
             <a href="#tabs-database" class="fieldGroupName">
               <em class="material-icons">indeterminate_check_box</em>
               <?php
-                print _txt('pl.entitlement.db_settings');
+                print _txt('pl.entitlement_provisioner.db_settings');
               ?>
             </a>
             <div id="names-container" class="fields">
@@ -174,7 +174,7 @@ $token_key = $this->request->params['_Token']['key'];
               <li>
                 <div class="field-name">
                   <div class="field-title">
-                    <?php print $this->Form->label('databas',_txt('pl.rciamstatsviewer.database')); ?>
+                    <?php print $this->Form->label('databas',_txt('pl.entitlement_proviioners.database')); ?>
                     <span class="required">*</span>
                   </div>
                 </div>
@@ -255,21 +255,14 @@ $token_key = $this->request->params['_Token']['key'];
             </ul>
             </div>
           </li>
-          <li id="fields-stats" class="fieldGroup">
-            <a href="#tabs-stats" class="fieldGroupName">
-                  <em class="material-icons">indeterminate_check_box</em>
-                  <?php print _txt('pl.rciamstatsviewer.pl_config'); ?>
-            </a>
-            <div id="names-container" class="fields">
-              <ul id="tabs-stats" class="fields form-list">
-                           <li id="fields-stats" class="fieldGroup">
+           <li id="fields-stats" class="fieldGroup">
             <a href="#tabs-stats" class="fieldGroupName">
                   <em class="material-icons">indeterminate_check_box</em>
                   <?php print _txt('pl.entitlement_provisioner.pl_config'); ?>
             </a>
             <div id="names-container" class="fields">
               <ul id="tabs-stats" class="fields form-list">
-                  <li>
+                <li id="fields-stats" class="fieldGroup">      
                       <div class="field-name">
                         <div class="field-title">
                           <?php print $this->Form->label('vo_whitelist',_txt('pl.entitlement_provisioner.vo_whitelist')); ?>
@@ -289,6 +282,7 @@ $token_key = $this->request->params['_Token']['key'];
                         <div class="field-title">
                           <?php print $this->Form->label('vo_roles',_txt('pl.entitlement_provisioner.vo_roles')); ?>
                         </div>
+                        <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.vo_roles.desc'); ?></div>
                       </div>
                       <div class="field-info">
                         <?php
@@ -303,6 +297,7 @@ $token_key = $this->request->params['_Token']['key'];
                     <div class="field-title">
                       <?php print $this->Form->label('merge_entitlements',_txt('pl.entitlement_provisioner.merge_entitlements')); ?>
                     </div>
+                    <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.merge_entitlements.desc'); ?></div>
                 </div>
                 <div class="field-info">
                     <?php
@@ -330,6 +325,7 @@ $token_key = $this->request->params['_Token']['key'];
                         <div class="field-title">
                           <?php print $this->Form->label('urn_namespace',_txt('pl.entitlement_provisioner.urn_namespace')); ?>
                         </div>
+                        <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.urn_namespace.desc'); ?></div>
                       </div>
                       <div class="field-info">
                         <?php
@@ -344,6 +340,7 @@ $token_key = $this->request->params['_Token']['key'];
                         <div class="field-title">
                           <?php print $this->Form->label('urn_authority',_txt('pl.entitlement_provisioner.urn_authority')); ?>
                         </div>
+                        <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.urn_authority.desc'); ?></div>
                       </div>
                       <div class="field-info">
                         <?php
@@ -358,6 +355,7 @@ $token_key = $this->request->params['_Token']['key'];
                         <div class="field-title">
                           <?php print $this->Form->label('urn_legacy',_txt('pl.entitlement_provisioner.urn_legacy')); ?>
                         </div>
+                        <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.urn_legacy.desc'); ?></div>
                       </div>
                       <div class="field-info">
                         <?php
@@ -454,7 +452,7 @@ $token_key = $this->request->params['_Token']['key'];
               type: "POST",
               url: '<?php echo $this->Html->url(array(
                 'plugin' => Inflector::singularize(Inflector::tableize($this->plugin)),
-                'controller' => 'rciam_stats_viewers',
+                'controller' => 'co_entitlement_provisioner_targets',
                 'action' => 'testconnection',
                 'co'  => $cur_co['Co']['id'])); ?>',
               beforeSend: function(xhr) {

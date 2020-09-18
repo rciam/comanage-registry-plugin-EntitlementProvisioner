@@ -83,7 +83,7 @@ $token_key = $this->request->params['_Token']['key'];
               <li>
                 <div class="field-name">
                   <div class="field-title">
-                    <?php print $this->Form->label('hostname',_txt('pl.entitlement.hostname')); ?>
+                    <?php print $this->Form->label('hostname',_txt('pl.entitlement_provisioner.hostname')); ?>
                     <span class="required">*</span>
                   </div>
                 </div>
@@ -200,7 +200,7 @@ $token_key = $this->request->params['_Token']['key'];
                     $attrs['empty'] = false;
 
                     if($e) {
-                      print $this->Form->select('persistent',
+                      print $this->Form->checkbox('persistent',
                                                 $vv_persistent_list,
                                                 $attrs);
 
@@ -306,7 +306,7 @@ $token_key = $this->request->params['_Token']['key'];
                     $attrs['empty'] = false;
 
                     if($e) {
-                      print $this->Form->select('merge_entitlements',
+                      print $this->Form->checkbox('CoEntitlementProvisionerTarget.merge_entitlements',
                                                 $vv_persistent_list,
                                                 $attrs);
 
@@ -364,7 +364,7 @@ $token_key = $this->request->params['_Token']['key'];
                     $attrs['empty'] = false;
 
                     if($e) {
-                      print $this->Form->select('urn_legacy',
+                      print $this->Form->checkbox('urn_legacy',
                                                 $vv_persistent_list,
                                                 $attrs);
 

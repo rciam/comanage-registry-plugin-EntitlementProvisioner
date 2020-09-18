@@ -35,6 +35,7 @@ $cm_entitlement_provisioner_texts['en_US'] = array(
       // Titles, per-controller
   'ct.entitlement_provisioner.1'          => 'Entitlement Provisioner',
   'ct.entitlement_provisioner.pl'         => 'Entitlement Provisioner',
+  'ct.co_entitlement_provisioner_targets.1' => 'Entitlement Provisioner Target',
   
   // Plugin texts
   'pl.entitlement_provisioner.hostname'        => 'Hostname',

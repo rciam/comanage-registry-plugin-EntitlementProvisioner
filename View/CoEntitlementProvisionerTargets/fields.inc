@@ -262,7 +262,7 @@ $token_key = $this->request->params['_Token']['key'];
             </a>
             <div id="names-container" class="fields">
               <ul id="tabs-stats" class="fields form-list">
-                <li id="fields-stats" class="fieldGroup">      
+                <li id="fields-stats" class="field-stack">      
                       <div class="field-name">
                         <div class="field-title">
                           <?php print $this->Form->label('vo_whitelist',_txt('pl.entitlement_provisioner.vo_whitelist')); ?>
@@ -273,11 +273,11 @@ $token_key = $this->request->params['_Token']['key'];
                         <?php
                           $intro = empty($co_entitlement_provisioner_targets[0]['CoEntitlementProvisionerTarget']['vo_whitelist']) ? ""
                                   : filter_var($co_entitlement_provisioner_targets[0]['CoEntitlementProvisionerTarget']['vo_whitelist'],FILTER_SANITIZE_SPECIAL_CHARS);
-                          print $this->Form->textarea('vo_whitelist', array('size' => 4000, 'value' => $intro));
+                          print $this->Form->textarea('vo_whitelist', array('size' => 4000, 'rows' => 5, 'value' => $intro));
                         ?>
                       </div>
                   </li>
-                  <li>
+                  <li class="field-stack">
                       <div class="field-name">
                         <div class="field-title">
                           <?php print $this->Form->label('vo_roles',_txt('pl.entitlement_provisioner.vo_roles')); ?>
@@ -288,7 +288,7 @@ $token_key = $this->request->params['_Token']['key'];
                         <?php
                           $intro = empty($co_entitlement_provisioner_targets[0]['CoEntitlementProvisionerTarget']['vo_roles']) ? ""
                                   : filter_var($co_entitlement_provisioner_targets[0]['CoEntitlementProvisionerTarget']['vo_roles'],FILTER_SANITIZE_SPECIAL_CHARS);
-                          print $this->Form->textarea('vo_roles', array('size' => 4000, 'value' => $intro));
+                          print $this->Form->textarea('vo_roles', array('size' => 4000, 'rows' => 5, 'value' => $intro));
                         ?>
                       </div>
                   </li>

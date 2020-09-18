@@ -35,19 +35,19 @@ App::uses('Hash', 'Utility');
  */
 class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
 {
-    // XXX All the classes/models that have tables should start with CO for the case of provisioners
-    // Define class name for cake
-    public $name = "CoEntitlementProvisionerTarget";
+  // XXX All the classes/models that have tables should start with CO for the case of provisioners
+  // Define class name for cake
+  public $name = "CoEntitlementProvisionerTarget";
 
-    // Add behaviors
-    public $actsAs = array('Containable');
+  // Add behaviors
+  public $actsAs = array('Containable');
 
-    // Association rules from this model to other models
-    public $belongsTo = array('CoProvisioningTarget');
+  // Association rules from this model to other models
+  public $belongsTo = array('CoProvisioningTarget');
 
-    // Default display field for cake generated views
-    public $displayField = "vo";
-/*
+  // Default display field for cake generated views
+  public $displayField = "vo";
+  /*
     public $hasMany = array(
         "CoEntitlementProvisionerServer" => array(
             'className' => 'EntitlementProvisioner.CoEntitlementProvisionerServer',
@@ -55,7 +55,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         ),
     );*/
 
-      /**
+  /**
    * Actions to take before a save operation is executed.
    *
    * @since  COmanage Registry v3.1.0
@@ -63,12 +63,36 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
 
   public function beforeSave($options = array())
   {
-      if (isset($this->data['CoEntitlementProvisionerTarget']['password'])) {
-          $key = Configure::read('Security.salt');
-          Configure::write('Security.useOpenSsl', true);
-          $password = base64_encode(Security::encrypt($this->data['CoEntitlementProvisionerTarget']['password'], $key));
-          $this->data['CoEntitlementProvisionerTarget']['password'] = $password;
-      }
+    if (isset($this->data['CoEntitlementProvisionerTarget']['password'])) {
+      $key = Configure::read('Security.salt');
+      Configure::write('Security.useOpenSsl', true);
+      $password = base64_encode(Security::encrypt($this->data['CoEntitlementProvisionerTarget']['password'], $key));
+      $this->data['CoEntitlementProvisionerTarget']['password'] = $password;
+    }
+  }
+
+  public function getConfiguration($coId)
+  {
+    $args = array();
+    $args['joins'] = array(
+      array(
+        'table' => 'cm_co_provisioning_targets',
+        'alias' => 'co_provisioning_targets',
+        'type' => 'INNER',
+        'conditions' => array(
+          'CoEntitlementProvisionerTarget.co_provisioning_target_id = co_provisioning_targets.id'
+        )
+      )
+    );
+    $args['conditions']['co_provisioning_targets.co_id'] = $coId;
+    $args['conditions']['co_provisioning_targets.plugin'] = 'EntitlementProvisioner';
+    //$args['contain'][] = 'CoEntitlementProvisionerTargets';
+    //$args['fields']=array('entitlement_provisioner_targets.*');
+
+    $entitlementProvisioners = $this->find('all', $args);
+
+    //Return only the first result. What if we have more than one?? Is it possible?
+    return $entitlementProvisioners[0]['CoEntitlementProvisionerTarget'];
   }
 
   // Validation rules for table elements
@@ -177,61 +201,61 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
     ),
   );
 
-    /**
-     * Establish a connection (via Cake's ConnectionManager) to the specified SQL server.
-     * @param integer $coId
-     * @param array $dbconfig
-     * @return DataSource|null
-     * @throws InvalidArgumentException   Plugins Configuration is not valid
-     * @throws MissingConnectionException The database connection failed
-     */
-    
-    public function connect($coId, $dbconfig = array())
-    {
-       
-        if (
-            empty($dbconfig)
-        ) {
-            throw new InvalidArgumentException(_txt('er.notfound', array(_txt('ct.rciam_stats_viewers.1'), $coId)));
-        }   
+  /**
+   * Establish a connection (via Cake's ConnectionManager) to the specified SQL server.
+   * @param integer $coId
+   * @param array $dbconfig
+   * @return DataSource|null
+   * @throws InvalidArgumentException   Plugins Configuration is not valid
+   * @throws MissingConnectionException The database connection failed
+   */
 
-        // Port Value
-        if (empty($dbconfig['port'])) {
-            if ($dbconfig['datasource'] === 'Database/Mysql') {
-                $dbconfig['port'] = EntitlementProvisionerDBPortsEnum::Mysql;
-            } else if ($dbconfig['datasource'] === 'Database/Postgres') {
-                $dbconfig['port'] = EntitlementProvisionerDBPortsEnum::Postgres;
-            }
-        }
+  public function connect($coId, $dbconfig = array())
+  {
 
-        // Database connection per CO
-        $datasource = ConnectionManager::create('connection_' . $coId, $dbconfig);
-
-        return $datasource;
+    if (
+      empty($dbconfig)
+    ) {
+      throw new InvalidArgumentException(_txt('er.notfound', array(_txt('ct.rciam_stats_viewers.1'), $coId)));
     }
 
-    /**
-     * Provision for the specified CO Person.
-     *
-     * @param Array CO Provisioning Target data
-     * @param ProvisioningActionEnum Registry transaction type triggering provisioning
-     * @param Array Provisioning data, populated with ['CoPerson'] or ['CoGroup']
-     * @return Boolean True on success
-     * @throws RuntimeException
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @since  COmanage Registry v0.8
-     */
+    // Port Value
+    if (empty($dbconfig['port'])) {
+      if ($dbconfig['datasource'] === 'Database/Mysql') {
+        $dbconfig['port'] = EntitlementProvisionerDBPortsEnum::Mysql;
+      } else if ($dbconfig['datasource'] === 'Database/Postgres') {
+        $dbconfig['port'] = EntitlementProvisionerDBPortsEnum::Postgres;
+      }
+    }
 
-    public function provision($coProvisioningTargetData, $op, $provisioningData)
-    {
-        $this->log(__METHOD__ . "::@", LOG_DEBUG);
-        $this->log(__METHOD__ . "::action => " . $op, LOG_DEBUG);
+    // Database connection per CO
+    $datasource = ConnectionManager::create('connection_' . $coId, $dbconfig);
 
-    switch($op) {
+    return $datasource;
+  }
+
+  /**
+   * Provision for the specified CO Person.
+   *
+   * @param Array CO Provisioning Target data
+   * @param ProvisioningActionEnum Registry transaction type triggering provisioning
+   * @param Array Provisioning data, populated with ['CoPerson'] or ['CoGroup']
+   * @return Boolean True on success
+   * @throws RuntimeException
+   * @throws \GuzzleHttp\Exception\GuzzleException
+   * @since  COmanage Registry v0.8
+   */
+
+  public function provision($coProvisioningTargetData, $op, $provisioningData)
+  {
+    $this->log(__METHOD__ . "::@", LOG_DEBUG);
+    $this->log(__METHOD__ . "::action => " . $op, LOG_DEBUG);
+
+    switch ($op) {
       case ProvisioningActionEnum::CoPersonAdded:
         break;
       case ProvisioningActionEnum::CoPersonDeleted:
-        
+
         break;
       case ProvisioningActionEnum::CoPersonUpdated:
         break;
@@ -240,7 +264,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
       case ProvisioningActionEnum::CoPersonPetitionProvisioned:
         // An update may cause an existing person to be written to VOMS for the first time
         // or for an unexpectedly removed entry to be replaced
-        
+
         break;
       default:
         // Ignore all other actions

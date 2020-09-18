@@ -174,7 +174,7 @@ $token_key = $this->request->params['_Token']['key'];
               <li>
                 <div class="field-name">
                   <div class="field-title">
-                    <?php print $this->Form->label('databas',_txt('pl.entitlement_proviioners.database')); ?>
+                    <?php print $this->Form->label('databas',_txt('pl.entitlement_provisioner.database')); ?>
                     <span class="required">*</span>
                   </div>
                 </div>
@@ -359,10 +359,23 @@ $token_key = $this->request->params['_Token']['key'];
                       </div>
                       <div class="field-info">
                         <?php
-                          $value = empty($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['urn_legacy']) ? ''
-                          : filter_var($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['urn_legacy'],FILTER_SANITIZE_SPECIAL_CHARS);
-                          print $this->Form->input('urn_legacy', array('size' => 50,'value' => $value));
-                        ?>
+                    $attrs = array();
+                    $attrs['value'] = (isset($co_entitlement_provisioner_targets) ? $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['urn_legacy'] : '');
+                    $attrs['empty'] = false;
+
+                    if($e) {
+                      print $this->Form->select('urn_legacy',
+                                                $vv_persistent_list,
+                                                $attrs);
+
+                      if($this->Form->isFieldError('urn_legacy')) {
+                        print $this->Form->error('urn_legacy');
+                      }
+                    } else {
+                      print _txt('en.server.sql', null, $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['urn_legacy']);
+                    }
+
+                  ?>
                       </div>
                   </li>
                 </ul>

@@ -226,5 +226,27 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
     {
         $this->log(__METHOD__ . "::@", LOG_DEBUG);
         $this->log(__METHOD__ . "::action => " . $op, LOG_DEBUG);
+
+    switch($op) {
+      case ProvisioningActionEnum::CoPersonAdded:
+        break;
+      case ProvisioningActionEnum::CoPersonDeleted:
+        
+        break;
+      case ProvisioningActionEnum::CoPersonUpdated:
+        break;
+      case ProvisioningActionEnum::CoPersonExpired:
+        break;
+      case ProvisioningActionEnum::CoPersonPetitionProvisioned:
+        // An update may cause an existing person to be written to VOMS for the first time
+        // or for an unexpectedly removed entry to be replaced
+        
+        break;
+      default:
+        // Ignore all other actions
+        $this->log(__METHOD__ . '::Provisioning action ' . $op . ' not allowed/implemented', LOG_DEBUG);
+        return true;
+        break;
     }
+  }
 }

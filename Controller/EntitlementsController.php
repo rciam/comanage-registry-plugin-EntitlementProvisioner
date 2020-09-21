@@ -41,8 +41,8 @@ class EntitlementsController extends StandardController
   {
     $fn = "index";
     $this->log(get_class($this) . "::{$fn}::@ ", LOG_DEBUG);
-
-    if ($this->request->is('restful') && !empty($this->params['url']['copersonid'])) {
+    $test = $this->request->query['coid'];
+    if ($this->request->is('restful') && !empty($this->params['url']['copersonid']) ) {
       // We need to retrieve via a join, which StandardController::index() doesn't
       // currently support.
 
@@ -50,7 +50,7 @@ class EntitlementsController extends StandardController
         //$groups = $this->CoGroup->findForCoPerson($this->params['url']['copersonid']);
 
         $syncEntitlements = new SyncEntitlements($this->CoEntitlementProvisionerTarget->getConfiguration(2));
-        $groups = $syncEntitlements->get_entitlements($this);
+        $groups = $syncEntitlements->getEntitlements($this->params['url']['copersonid']);
 
         if (!empty($groups)) {
           $this->set('co_groups', $groups);

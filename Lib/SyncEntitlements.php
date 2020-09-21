@@ -1,15 +1,20 @@
 <?php
-App::uses("CoProvisionerPluginTarget", "Model");
+App::uses('CoProvisionerPluginTarget', 'Model');
+App::uses('CakeLog', 'Log');
 
 class SyncEntitlements{
+  public $components = array("Session");
+  
 
   public  $state = array();
   public  $coEntitlementProvisioningTarget = null;
   public  $nested_cous_paths;
+  public  $CoGroup;
 
   public function __construct($coEntitlementProvisioningTarget){
     $this->state['Attributes'] = array();
     $this->coEntitlementProvisioningTarget = $coEntitlementProvisioningTarget;
+    $this->CoGroup = ClassRegistry::init('CoGroup');
   }
 
   /**
@@ -22,7 +27,7 @@ class SyncEntitlements{
    * @uses SimpleSAML_Logger::debug
    * @uses SimpleSAML\Database::getInstance
    */
-  public static function getMemberships($obj, $co_id, $co_person_id){
+  public function getMemberships($co_id, $co_person_id){
 
     // Strip the cou_id from the unnecessary characters
     //$queryParams = array(
@@ -65,10 +70,7 @@ class SyncEntitlements{
       . " GROUP BY"
       . " groups.name";
 
-
-
-
-    $result = $obj->CoGroup->query($membership_query);
+    $result = $this->CoGroup->query($membership_query);
 
     /* $stmt = $db->read($membership_query, $queryParams);
         if($stmt->execute()) {
@@ -160,7 +162,7 @@ class SyncEntitlements{
    * @uses SimpleSAML\Database::getInstance
    */
 
-  private function getCouTreeStructure($obj, $cous) {
+  private function getCouTreeStructure($cous) {
     $cous = $cous[0];
     foreach($cous as $cou) {
       if(empty($cou['group_name']) || empty($cou['cou_id'])) {
@@ -172,7 +174,7 @@ class SyncEntitlements{
       //);
       //$stmt = $db->read($recursive_query, $queryParams);
       $recursive_query = $this->constructRecursiveQuery($cou['cou_id']);
-      $result = $obj->CoGroup->query($recursive_query);
+      $result = $this->CoGroup->query($recursive_query);
 
       foreach($result as $row) {
         $row = $row[0];
@@ -193,12 +195,12 @@ class SyncEntitlements{
     }
     //SimpleSAML_Logger::debug("[attrauthcomanage] getCouTreeStructure: nested_cous_paths=" . var_export($nested_cous_paths, true));
 
-    $obj->log(__METHOD__ . "::getCouTreeStructure: nested_cous_paths= => " . var_export($this->nested_cous_paths, true), LOG_DEBUG);
+    CakeLog::write('debug', __METHOD__ . "::getCouTreeStructure: nested_cous_paths= => " . var_export($this->nested_cous_paths, true), LOG_DEBUG);
   }
 
-  public function get_entitlements($obj) {
+  public function getEntitlements($coPersonId) {
     // XXX Get all the memberships from the the CO for the user
-    $co_memberships = SyncEntitlements::getMemberships($obj, 2, 1635);
+    $co_memberships = SyncEntitlements::getMemberships(2, $coPersonId);
     // XXX if this is empty return
     if(empty($co_memberships)) {
       if(!array_key_exists('eduPersonEntitlement', $this->state['Attributes'])) {
@@ -216,16 +218,14 @@ class SyncEntitlements{
       }
     );
 
-    $obj->log(__METHOD__ . "::group_memberships => " . var_export($group_memberships, true), LOG_DEBUG);
+    CakeLog::write('debug', __METHOD__ . "::group_memberships => " . var_export($group_memberships, true), LOG_DEBUG);
     // XXX Construct the plain group Entitlements
     $this->groupEntitlemeAssemble($group_memberships, $obj->coId, $obj->voPrefix);
 
     // XXX Get the Nested COUs for the user
     $nested_cous = [];
-    $this->getCouTreeStructure($obj, $co_memberships);
+    $this->getCouTreeStructure($co_memberships);
 
     return $group_memberships;
-   
-
   }
 }

@@ -198,9 +198,9 @@ class SyncEntitlements{
     CakeLog::write('debug', __METHOD__ . "::getCouTreeStructure: nested_cous_paths= => " . var_export($this->nested_cous_paths, true), LOG_DEBUG);
   }
 
-  public function getEntitlements($coPersonId) {
+  public function getEntitlements($coId, $coPersonId) {
     // XXX Get all the memberships from the the CO for the user
-    $co_memberships = SyncEntitlements::getMemberships(2, $coPersonId);
+    $co_memberships = SyncEntitlements::getMemberships($coId, $coPersonId);
     // XXX if this is empty return
     if(empty($co_memberships)) {
       if(!array_key_exists('eduPersonEntitlement', $this->state['Attributes'])) {

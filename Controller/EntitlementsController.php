@@ -41,16 +41,16 @@ class EntitlementsController extends StandardController
   {
     $fn = "index";
     $this->log(get_class($this) . "::{$fn}::@ ", LOG_DEBUG);
-    $test = $this->request->query['coid'];
-    if ($this->request->is('restful') && !empty($this->params['url']['copersonid']) ) {
+    $test = $this->params['url'];
+    if ($this->request->is('restful') && !empty($this->params['url']['copersonid'])  && !empty($this->params['url']['coid']) ) {
       // We need to retrieve via a join, which StandardController::index() doesn't
       // currently support.
 
       try {
         //$groups = $this->CoGroup->findForCoPerson($this->params['url']['copersonid']);
 
-        $syncEntitlements = new SyncEntitlements($this->CoEntitlementProvisionerTarget->getConfiguration(2));
-        $groups = $syncEntitlements->getEntitlements($this->params['url']['copersonid']);
+        $syncEntitlements = new SyncEntitlements($this->CoEntitlementProvisionerTarget->getConfiguration($this->params['url']['coid']));
+        $groups = $syncEntitlements->getEntitlements($this->params['url']['coid'], $this->params['url']['copersonid']);
 
         if (!empty($groups)) {
           $this->set('co_groups', $groups);
@@ -129,7 +129,7 @@ class EntitlementsController extends StandardController
       $args['contain'] = false;
 
       $member = $this->CoGroup->CoGroupMember->find('all', $args);
-
+      
       if (!empty($this->request->params['pass'][0])) {
         $managed = $this->Role->isGroupManager($roles['copersonid'], $this->request->params['pass'][0]);
       }

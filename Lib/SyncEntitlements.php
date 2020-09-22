@@ -230,7 +230,7 @@ class SyncEntitlements{
     // XXX Get the Nested COUs for the user
     $nested_cous = [];
     $this->getCouTreeStructure($co_memberships);
-
-    return $group_memberships;
+    return $this->state['Attributes']['eduPersonEntitlement'];
+    //return $group_memberships;
   }
 }

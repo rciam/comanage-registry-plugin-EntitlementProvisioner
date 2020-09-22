@@ -46,8 +46,7 @@ class EntitlementsController extends StandardController
       // We need to retrieve via a join, which StandardController::index() doesn't
       // currently support.
 
-      try {
-        
+      try {       
         $syncEntitlements = new SyncEntitlements($this->CoEntitlementProvisionerTarget->getConfiguration($this->params['url']['coid']));
         $groups = $syncEntitlements->getEntitlements($this->params['url']['coid'], $this->params['url']['copersonid']);
 

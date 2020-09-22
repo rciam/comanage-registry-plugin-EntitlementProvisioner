@@ -55,4 +55,7 @@ $cm_entitlement_provisioner_texts['en_US'] = array(
   'pl.entitlement_provisioner.urn_authority.desc'      => 'A string to use as the authority of the generated eduPersonEntitlement URN values containing group membership and role information',
   'pl.entitlement_provisioner.urn_legacy'              => 'URN Legacy',
   'pl.entitlement_provisioner.urn_legacy.desc'         => 'A boolean value for controlling whether to generate eduPersonEntitlement URN values using the legacy syntax.',
+  'pl.entitlement_provisioner.vo_group_prefix'         => 'VO Group Prefix',
+  'pl.entitlement_provisioner.vo_group_prefix.desc'    => 'A comma seperated list of group prefixes per (CO)mmunity to be used for the composition of the entitlements.',
+  
 );

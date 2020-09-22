@@ -96,7 +96,7 @@ class SyncEntitlements{
    * @todo Replace voPrefix with a configuration variable
    * @todo Replace $co_id with a configuration variable
    */
-  private function groupEntitlementAssemble($memberships_groups, $co_id){
+  private function groupEntitlementAssemble($memberships_groups){
     if(empty($memberships_groups)) {
       return;
     }
@@ -114,11 +114,11 @@ class SyncEntitlements{
         $this->state['Attributes']['eduPersonEntitlement'] = array();
       }
       // todo: Move this to configuration
-      $groupPrefix = ($co_id === 5) ?  $this->coEntitlementProvisioningTarget['vo_group_prefix'] . 'group:' : $this->coEntitlementProvisioningTarget['vo_group_prefix'] . 'registry:';
+      
       foreach($roles as $role) {
         $this->state['Attributes']['eduPersonEntitlement'][] =
           $this->coEntitlementProvisioningTarget['urn_namespace']          // URN namespace
-          . ":group:registry:"         // URN namespace
+          . ":group:" . $this->coEntitlementProvisioningTarget['vo_group_prefix'] . ":"   // Group Prefix
           . urlencode($group['group_name'])      // VO
           . ":role=" . $role             // role
           . "#" . $this->urnAuthority; // AA FQDN
@@ -225,7 +225,7 @@ class SyncEntitlements{
 
     CakeLog::write('debug', __METHOD__ . "::group_memberships => " . var_export($group_memberships, true), LOG_DEBUG);
     // XXX Construct the plain group Entitlements
-    $this->groupEntitlementAssemble($group_memberships, $coId);
+    $this->groupEntitlementAssemble($group_memberships);
 
     // XXX Get the Nested COUs for the user
     $nested_cous = [];

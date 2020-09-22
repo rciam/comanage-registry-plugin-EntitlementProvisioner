@@ -42,12 +42,12 @@
     <field name="databas" type="C" size="128" />
     <field name="persistent" type="L" />
     <field name="encoding" type="C" size="128" />
-    <field name="vo_roles" type="C" size="512" />
+    <field name="vo_roles" type="X" size="4000" />
     <field name="merge_entitlements" type="L" />
     <field name="urn_namespace" type="C" size="128" />
     <field name="urn_authority" type="C" size="128" />
     <field name="urn_legacy" type="C" size="128" />
-    <field name="vo_whitelist" type="C" size="512" />
+    <field name="vo_whitelist" type="X" size="4000" />
     <field name="vo_group_prefix" type="C" size="128" />
     <field name="actor_identifier" type="C" size="256" />
     <field name="created" type="T" />

@@ -281,6 +281,7 @@ $token_key = $this->request->params['_Token']['key'];
                       <div class="field-name">
                         <div class="field-title">
                           <?php print $this->Form->label('vo_roles',_txt('pl.entitlement_provisioner.vo_roles')); ?>
+                          <span class="required">*</span>
                         </div>
                         <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.vo_roles.desc'); ?></div>
                       </div>
@@ -324,6 +325,7 @@ $token_key = $this->request->params['_Token']['key'];
                     <div class="field-name">
                         <div class="field-title">
                           <?php print $this->Form->label('urn_namespace',_txt('pl.entitlement_provisioner.urn_namespace')); ?>
+                          <span class="required">*</span>
                         </div>
                         <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.urn_namespace.desc'); ?></div>
                       </div>
@@ -339,6 +341,7 @@ $token_key = $this->request->params['_Token']['key'];
                     <div class="field-name">
                         <div class="field-title">
                           <?php print $this->Form->label('urn_authority',_txt('pl.entitlement_provisioner.urn_authority')); ?>
+                          <span class="required">*</span>
                         </div>
                         <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.urn_authority.desc'); ?></div>
                       </div>
@@ -382,6 +385,7 @@ $token_key = $this->request->params['_Token']['key'];
                   <div class="field-name">
                       <div class="field-title">
                         <?php print $this->Form->label('vo_group_prefix',_txt('pl.entitlement_provisioner.vo_group_prefix')); ?>
+                        <span class="required">*</span>
                       </div>
                       <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.vo_group_prefix.desc'); ?></div>
                     </div>

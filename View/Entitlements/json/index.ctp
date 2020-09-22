@@ -26,12 +26,12 @@
  */
   
   // Get a pointer to our model
-  $model = 'CoGroups';                     // Unlike in the controllers, this is CamelPlural
+  $model = 'EntitlementProvisioner';                     // Unlike in the controllers, this is CamelPlural
   $req = Inflector::singularize($model);
   $modelpl = Inflector::tableize($req);
   $modelcc = $model;
 
-    print json_encode(array("ResponseType" => $modelcc,
+  print json_encode(array("ResponseType" => $modelcc,
                            "Version" => "1.0",    // XXX this needs to be set by the controller
                            $modelcc => $co_groups)) . "\n";
   

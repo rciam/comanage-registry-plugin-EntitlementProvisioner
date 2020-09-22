@@ -47,8 +47,7 @@ class EntitlementsController extends StandardController
       // currently support.
 
       try {
-        //$groups = $this->CoGroup->findForCoPerson($this->params['url']['copersonid']);
-
+        
         $syncEntitlements = new SyncEntitlements($this->CoEntitlementProvisionerTarget->getConfiguration($this->params['url']['coid']));
         $groups = $syncEntitlements->getEntitlements($this->params['url']['coid'], $this->params['url']['copersonid']);
 

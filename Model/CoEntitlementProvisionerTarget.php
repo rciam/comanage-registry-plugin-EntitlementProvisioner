@@ -199,6 +199,11 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
       'required' => false,
       'allowEmpty' => true
     ),
+    'vo_group_prefix' => array(
+      'rule' => '/.*/',
+      'required' => false,
+      'allowEmpty' => true
+    ),
   );
 
   /**

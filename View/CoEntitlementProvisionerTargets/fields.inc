@@ -350,32 +350,47 @@ $token_key = $this->request->params['_Token']['key'];
                         ?>
                       </div>
                   </li>
-                   <li>
-                    <div class="field-name">
-                        <div class="field-title">
-                          <?php print $this->Form->label('urn_legacy',_txt('pl.entitlement_provisioner.urn_legacy')); ?>
-                        </div>
-                        <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.urn_legacy.desc'); ?></div>
+                  <li>
+                  <div class="field-name">
+                      <div class="field-title">
+                        <?php print $this->Form->label('urn_legacy',_txt('pl.entitlement_provisioner.urn_legacy')); ?>
                       </div>
-                      <div class="field-info">
-                        <?php
-                    $attrs = array();
-                    $attrs['value'] = (isset($co_entitlement_provisioner_targets) ? $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['urn_legacy'] : '');
-                    $attrs['empty'] = false;
+                      <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.urn_legacy.desc'); ?></div>
+                    </div>
+                    <div class="field-info">
+                      <?php
+                  $attrs = array();
+                  $attrs['value'] = (isset($co_entitlement_provisioner_targets) ? $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['urn_legacy'] : '');
+                  $attrs['empty'] = false;
 
-                    if($e) {
-                      print $this->Form->checkbox('urn_legacy',
-                                                $vv_persistent_list,
-                                                $attrs);
+                  if($e) {
+                    print $this->Form->checkbox('urn_legacy',
+                                              $vv_persistent_list,
+                                              $attrs);
 
-                      if($this->Form->isFieldError('urn_legacy')) {
-                        print $this->Form->error('urn_legacy');
-                      }
-                    } else {
-                      print _txt('en.server.sql', null, $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['urn_legacy']);
+                    if($this->Form->isFieldError('urn_legacy')) {
+                      print $this->Form->error('urn_legacy');
                     }
+                  } else {
+                    print _txt('en.server.sql', null, $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['urn_legacy']);
+                  }
 
-                  ?>
+                ?>
+                    </div>
+                  </li>
+                  <li>
+                  <div class="field-name">
+                      <div class="field-title">
+                        <?php print $this->Form->label('vo_group_prefix',_txt('pl.entitlement_provisioner.vo_group_prefix')); ?>
+                      </div>
+                      <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.vo_group_prefix.desc'); ?></div>
+                    </div>
+                    <div class="field-info">
+                        <?php
+                          $value = empty($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['vo_group_prefix']) ? ''
+                          : filter_var($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['vo_group_prefix'],FILTER_SANITIZE_SPECIAL_CHARS);
+                          print $this->Form->input('vo_group_prefix', array('size' => 50,'value' => $value));
+                        ?>
                       </div>
                   </li>
                 </ul>

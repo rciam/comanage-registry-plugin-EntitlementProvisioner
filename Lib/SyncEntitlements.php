@@ -96,7 +96,7 @@ class SyncEntitlements{
    * @todo Replace voPrefix with a configuration variable
    * @todo Replace $co_id with a configuration variable
    */
-  private function groupEntitlemeAssemble($memberships_groups, $co_id, $voPrefix){
+  private function groupEntitlementAssemble($memberships_groups, $co_id){
     if(empty($memberships_groups)) {
       return;
     }
@@ -114,7 +114,7 @@ class SyncEntitlements{
         $this->state['Attributes']['eduPersonEntitlement'] = array();
       }
       // todo: Move this to configuration
-      $groupPrefix = ($co_id === 5) ? $voPrefix . 'group:' : $voPrefix . 'registry:';
+      $groupPrefix = ($co_id === 5) ?  $this->coEntitlementProvisioningTarget['vo_group_prefix'] . 'group:' : $this->coEntitlementProvisioningTarget['vo_group_prefix'] . 'registry:';
       foreach($roles as $role) {
         $this->state['Attributes']['eduPersonEntitlement'][] =
           $this->coEntitlementProvisioningTarget['urn_namespace']          // URN namespace
@@ -180,13 +180,18 @@ class SyncEntitlements{
         $row = $row[0];
         //            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         if(strpos($row['path'], ':') !== false) {
+          $path_group_list = explode(':', $row['path']);
+          $path_group_list = array_map(function($group){
+            return urlencode($group);
+          }, $path_group_list);
+
           $this->nested_cous_paths += [
             $cou['cou_id'] => [
-              'path'           => $row['path'],
+              'path'           => implode(':', $path_group_list),
               'path_id_list'   => explode(':', $row['path_id']),
               'path_full_list' => array_combine(
                 explode(':', $row['path_id']), // keys
-                explode(':', $row['path'])     // values
+                $path_group_list     // values
               ),
             ],
           ];
@@ -220,7 +225,7 @@ class SyncEntitlements{
 
     CakeLog::write('debug', __METHOD__ . "::group_memberships => " . var_export($group_memberships, true), LOG_DEBUG);
     // XXX Construct the plain group Entitlements
-    $this->groupEntitlemeAssemble($group_memberships, $obj->coId, $obj->voPrefix);
+    $this->groupEntitlementAssemble($group_memberships, $coId);
 
     // XXX Get the Nested COUs for the user
     $nested_cous = [];

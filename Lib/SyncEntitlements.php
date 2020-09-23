@@ -10,11 +10,15 @@ class SyncEntitlements{
   public  $coEntitlementProvisioningTarget = null;
   public  $nested_cous_paths;
   public  $CoGroup;
+  public  $Co;
+  public  $coId;
 
-  public function __construct($coEntitlementProvisioningTarget){
+  public function __construct($coEntitlementProvisioningTarget, $coId){
     $this->state['Attributes'] = array();
     $this->coEntitlementProvisioningTarget = $coEntitlementProvisioningTarget;
     $this->CoGroup = ClassRegistry::init('CoGroup');
+    $this->Co = ClassRegistry::init('Co');
+    $this->coId = $coId;
   }
 
   /**
@@ -27,7 +31,7 @@ class SyncEntitlements{
    * @uses SimpleSAML_Logger::debug
    * @uses SimpleSAML\Database::getInstance
    */
-  public function getMemberships($co_id, $co_person_id){
+  public function getMemberships($co_person_id){
 
     // Strip the cou_id from the unnecessary characters
     //$queryParams = array(
@@ -36,40 +40,8 @@ class SyncEntitlements{
     //);
 
     // XXX Since i voWhitelist only the parent VO/COU i can not filter VOs with the query
-    $membership_query =
-      "SELECT"
-      . " DISTINCT substring(groups.name, '^(?:(?:COU?[:])+)?(.+?)(?:[:]mem.+)?$') as group_name,"
-      . " string_agg(DISTINCT groups.cou_id::text, ',') as cou_id,"
-      . " CASE WHEN groups.name ~ ':admins' THEN null"
-      . " ELSE string_agg(DISTINCT nullif(role.affiliation, ''), ',')"
-      . " END AS affiliation,"
-      . " CASE WHEN groups.name ~ ':admins' THEN null"
-      . " ELSE string_agg(DISTINCT nullif(role.title, ''), ',')"
-      . " END AS title,"
-      . " bool_or(members.member) as member,"
-      . " bool_or(members.owner) as owner"
-      . " FROM cm_co_groups AS groups"
-      . " INNER JOIN cm_co_group_members AS members ON groups.id=members.co_group_id"
-      . " AND members.co_group_member_id IS NULL"
-      . " AND NOT members.deleted"
-      . " AND groups.co_group_id IS NULL"
-      . " AND NOT groups.deleted"
-      . " AND groups.name not ilike '%members:all'"
-      . " AND groups.name not ilike 'CO:admins'"
-      . " AND groups.name not ilike 'CO:members:active'"
-      . " AND members.co_person_id= " . $co_person_id
-      . " AND groups.co_id = " . $co_id
-      . " AND groups.status = 'A'"
-      . " LEFT OUTER JOIN cm_cous AS cous ON groups.cou_id = cous.id"
-      . " AND NOT cous.deleted"
-      . " AND cous.cou_id IS NULL"
-      . " LEFT OUTER JOIN cm_co_person_roles AS ROLE ON cous.id = role.cou_id"
-      . " AND role.co_person_role_id IS NULL"
-      . " AND role.status = 'A'"
-      . " AND NOT role.deleted    AND role.co_person_id = members.co_person_id"
-      . " GROUP BY"
-      . " groups.name";
-
+    $membership_query = QueryConstructor::getMembershipQuery($this->coId, $co_person_id);
+     
     $result = $this->CoGroup->query($membership_query);
 
     /* $stmt = $db->read($membership_query, $queryParams);
@@ -88,6 +60,9 @@ class SyncEntitlements{
     return $result;
   }
 
+  private function get_vo_group_prefix(){
+    return empty($this->coEntitlementProvisioningTarget['vo_group_prefix']) ? urlencode($this->Co->field('name', array('Co.id' => $this->coId))).':group' : urlencode($this->coEntitlementProvisioningTarget['vo_group_prefix']);
+  }
   /**
    * Construct the plain group entitlements. No nesting supported.
    * @param array $memberships_groups
@@ -114,11 +89,11 @@ class SyncEntitlements{
         $this->state['Attributes']['eduPersonEntitlement'] = array();
       }
       // todo: Move this to configuration
-      
+      $voGroupPrefix = $this->get_vo_group_prefix();
       foreach($roles as $role) {
         $this->state['Attributes']['eduPersonEntitlement'][] =
           $this->coEntitlementProvisioningTarget['urn_namespace']          // URN namespace
-          . ":group:" . $this->coEntitlementProvisioningTarget['vo_group_prefix'] . ":"   // Group Prefix
+          . ":group:" . $voGroupPrefix . ":"   // Group Prefix
           . urlencode($group['group_name'])      // VO
           . ":role=" . $role             // role
           . "#" . $this->urnAuthority; // AA FQDN
@@ -126,7 +101,7 @@ class SyncEntitlements{
         if($this->coEntitlementProvisioningTarget['urn_legacy']) {
           $this->state['Attributes']['eduPersonEntitlement'][] =
             $this->coEntitlementProvisioningTarget['urn_namespace']          // URN namespace
-            . ':' . $this->urnAuthority  // AA FQDN
+            . ':' . $this->coEntitlementProvisioningTarget['urnAuthority']  // AA FQDN
             . ':' . $role                // role
             . "@"                        // VO delimiter
             . urlencode($group['group_name']);     // VO
@@ -135,23 +110,6 @@ class SyncEntitlements{
     }
   }
 
-  private function constructRecursiveQuery($couId){
-    $recursive_query =
-      "WITH RECURSIVE cous_cte(id, name, parent_id, depth, path) AS ("
-      . " SELECT cc.id, cc.name, cc.parent_id, 1::INT AS depth, cc.name::TEXT AS path, cc.id::TEXT AS path_id"
-      . " FROM cm_cous AS cc"
-      . " WHERE cc.parent_id IS NULL"
-      . " UNION ALL"
-      . " SELECT c.id, c.name, c.parent_id, p.depth + 1 AS depth,"
-      . " (p.path || ':' || c.name::TEXT),"
-      . " (p.path_id || ':' || c.id::TEXT)"
-      . " FROM cous_cte AS p, cm_cous AS c"
-      . " WHERE c.parent_id = p.id"
-      . " )"
-      . " SELECT * FROM cous_cte AS ccte where ccte.id=" . $couId;
-
-    return $recursive_query;
-  }
 
   /**
    * Returns nested COU path ready to use in an AARC compatible entitlement
@@ -173,7 +131,7 @@ class SyncEntitlements{
       //  'cou_id' => array($cou['cou_id'], PDO::PARAM_INT),
       //);
       //$stmt = $db->read($recursive_query, $queryParams);
-      $recursive_query = $this->constructRecursiveQuery($cou['cou_id']);
+      $recursive_query = QueryConstructor::getRecursiveQuery($cou['cou_id']);
       $result = $this->CoGroup->query($recursive_query);
 
       foreach($result as $row) {
@@ -203,9 +161,9 @@ class SyncEntitlements{
     CakeLog::write('debug', __METHOD__ . "::getCouTreeStructure: nested_cous_paths= => " . var_export($this->nested_cous_paths, true), LOG_DEBUG);
   }
 
-  public function getEntitlements($coId, $coPersonId) {
+  public function getEntitlements($coPersonId) {
     // XXX Get all the memberships from the the CO for the user
-    $co_memberships = SyncEntitlements::getMemberships($coId, $coPersonId);
+    $co_memberships = SyncEntitlements::getMemberships($coPersonId);
     // XXX if this is empty return
     if(empty($co_memberships)) {
       if(!array_key_exists('eduPersonEntitlement', $this->state['Attributes'])) {

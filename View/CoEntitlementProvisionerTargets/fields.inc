@@ -385,7 +385,6 @@ $token_key = $this->request->params['_Token']['key'];
                   <div class="field-name">
                       <div class="field-title">
                         <?php print $this->Form->label('vo_group_prefix',_txt('pl.entitlement_provisioner.vo_group_prefix')); ?>
-                        <span class="required">*</span>
                       </div>
                       <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.vo_group_prefix.desc'); ?></div>
                     </div>

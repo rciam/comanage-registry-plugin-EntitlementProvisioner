@@ -42,7 +42,7 @@
     <field name="databas" type="C" size="128" />
     <field name="persistent" type="L" />
     <field name="encoding" type="C" size="128" />
-    <field name="vo_roles" type="X" size="4000" />
+    <field name="vo_roles" type="C" size="256" />
     <field name="merge_entitlements" type="L" />
     <field name="urn_namespace" type="C" size="128" />
     <field name="urn_authority" type="C" size="128" />

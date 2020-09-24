@@ -47,13 +47,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
 
   // Default display field for cake generated views
   public $displayField = "vo";
-  /*
-    public $hasMany = array(
-        "CoEntitlementProvisionerServer" => array(
-            'className' => 'EntitlementProvisioner.CoEntitlementProvisionerServer',
-            'dependent' => true
-        ),
-    );*/
+ 
 
   /**
    * Actions to take before a save operation is executed.
@@ -63,7 +57,16 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
 
   public function beforeSave($options = array())
   {
-    if (isset($this->data['CoEntitlementProvisionerTarget']['password'])) {
+    //remove new lines and whitespaces for "VO Whitelist" field
+    if(isset($this->data['CoEntitlementProvisionerTarget']['vo_whitelist'])) {
+      $this->data['CoEntitlementProvisionerTarget']['vo_whitelist'] = str_replace(array("\r", "\n"), '', $this->data['CoEntitlementProvisionerTarget']['vo_whitelist']);
+      $values = explode(',', $this->data['CoEntitlementProvisionerTarget']['vo_whitelist']);
+      foreach($values as $key=>$value){
+          $values[$key] = trim($value);
+      }
+      $this->data['CoEntitlementProvisionerTarget']['vo_whitelist'] = implode(',', $values);
+    }
+    if(isset($this->data['CoEntitlementProvisionerTarget']['password'])) {
       $key = Configure::read('Security.salt');
       Configure::write('Security.useOpenSsl', true);
       $password = base64_encode(Security::encrypt($this->data['CoEntitlementProvisionerTarget']['password'], $key));
@@ -86,8 +89,6 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
     );
     $args['conditions']['co_provisioning_targets.co_id'] = $coId;
     $args['conditions']['co_provisioning_targets.plugin'] = 'EntitlementProvisioner';
-    //$args['contain'][] = 'CoEntitlementProvisionerTargets';
-    //$args['fields']=array('entitlement_provisioner_targets.*');
 
     $entitlementProvisioners = $this->find('all', $args);
 
@@ -247,7 +248,6 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
    * @param Array Provisioning data, populated with ['CoPerson'] or ['CoGroup']
    * @return Boolean True on success
    * @throws RuntimeException
-   * @throws \GuzzleHttp\Exception\GuzzleException
    * @since  COmanage Registry v0.8
    */
 

@@ -35,7 +35,7 @@ class AppSchema extends CakeSchema {
     'databas' => array('type' => 'string', 'null' => true, 'default' => null, 'length' => 128),
     'persistent' => array('type' => 'boolean', 'null' => true, 'default' => null),
     'encoding' => array('type' => 'string', 'null' => true, 'default' => null, 'length' => 128),
-    'vo_roles' => array('type' => 'text', 'null' => true, 'default' => null, 'length' => 4000),
+    'vo_roles' => array('type' => 'string', 'null' => true, 'default' => null, 'length' => 256),
     'merge_entitlements' => array('type' => 'boolean', 'null' => true, 'default' => null),
     'urn_namespace' => array('type' => 'string', 'null' => true, 'default' => null, 'length' => 128),
     'urn_authority' => array('type' => 'string', 'null' => true, 'default' => null, 'length' => 128),

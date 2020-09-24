@@ -277,7 +277,7 @@ $token_key = $this->request->params['_Token']['key'];
                         ?>
                       </div>
                   </li>
-                  <li class="field-stack">
+                  <li>
                       <div class="field-name">
                         <div class="field-title">
                           <?php print $this->Form->label('vo_roles',_txt('pl.entitlement_provisioner.vo_roles')); ?>
@@ -287,9 +287,9 @@ $token_key = $this->request->params['_Token']['key'];
                       </div>
                       <div class="field-info">
                         <?php
-                          $intro = empty($co_entitlement_provisioner_targets[0]['CoEntitlementProvisionerTarget']['vo_roles']) ? ""
+                          $vo_roles_value = empty($co_entitlement_provisioner_targets[0]['CoEntitlementProvisionerTarget']['vo_roles']) ? ""
                                   : filter_var($co_entitlement_provisioner_targets[0]['CoEntitlementProvisionerTarget']['vo_roles'],FILTER_SANITIZE_SPECIAL_CHARS);
-                          print $this->Form->textarea('vo_roles', array('size' => 4000, 'rows' => 5, 'value' => $intro));
+                          print $this->Form->input('vo_roles', array('size' => 256, 'value' => $vo_roles_value));
                         ?>
                       </div>
                   </li>

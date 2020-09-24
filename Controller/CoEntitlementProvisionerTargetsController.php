@@ -33,7 +33,6 @@ class CoEntitlementProvisionerTargetsController extends SPTController {
 
   public $uses = array(
     'EntitlementProvisioner.CoEntitlementProvisionerTarget',
-//    'VomsProvisioner.CoVomsProvisionerServer',
     'CoGroup',
   );
 
@@ -49,9 +48,10 @@ class CoEntitlementProvisionerTargetsController extends SPTController {
       'csrfExpires' => '+10 minutes'
     ));
 
-
-      /**
+  /**
+   * beforeFilter
    *
+   * @return void
    */
   public function beforeFilter(){
     parent::beforeFilter();
@@ -80,8 +80,11 @@ class CoEntitlementProvisionerTargetsController extends SPTController {
     return $this->redirect($location);
   }
 
-   /**
+    
+  /**
+   * beforeRender
    *
+   * @return void
    */
   public function beforeRender()
   {

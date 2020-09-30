@@ -9,19 +9,43 @@ class MitreId
 {
 
   public static $entitlementFormat = '/(^urn:mace:egi.eu:(.*)#aai.egi.eu$)|(^urn:mace:egi.eu:aai.egi.eu:(.*))/i';
-
+  
+  /**
+   * config
+   *
+   * @param  mixed $mitreId
+   * @param  mixed $datasource
+   * @param  string $table_name
+   * @return void
+   */
   public static function config($mitreId, $datasource, $table_name)
   {
     $mitreId->useDbConfig = $datasource->configKeyName;
     $mitreId->useTable = $table_name;
   }
-
+  
+  /**
+   * getCurrentEntitlements
+   *
+   * @param  mixed $mitreId
+   * @param  integer $user_id
+   * @return void
+   */
   public static function getCurrentEntitlements($mitreId, $user_id) {
     $current_entitlements = $mitreId->find('all', array('conditions' => array('MitreIdEntitlements.user_id' => $user_id)));
     $current_entitlements = Hash::extract($current_entitlements, '{n}.MitreIdEntitlements.edu_person_entitlement');
     return $current_entitlements;
   }
-
+  
+  /**
+   * deleteOldEntitlements
+   *
+   * @param  mixed $mitreId
+   * @param  integer $user_id
+   * @param  array $current_entitlements
+   * @param  array $new_entitlements
+   * @return void
+   */
   public static function deleteOldEntitlements($mitreId, $user_id, $current_entitlements, $new_entitlements) {
     $deleteEntitlements = array_diff($current_entitlements, $new_entitlements);
     //Remove only those from check-in
@@ -34,7 +58,16 @@ class MitreId
         . ' AND edu_person_entitlement IN ' . $deleteEntitlementsParam);
     }
   }
-
+  
+  /**
+   * insertNewEntitlements
+   *
+   * @param  mixed $mitreId
+   * @param  integer $user_id
+   * @param  array $current_entitlements
+   * @param  array $new_entitlements
+   * @return void
+   */
   public static function insertNewEntitlements($mitreId, $user_id, $current_entitlements, $new_entitlements) {
     $insertEntitlements = array_diff($new_entitlements, $current_entitlements);
     if(!empty($insertEntitlements)) {

@@ -26,7 +26,9 @@
  * @license       Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
  */
 
+App::import('Model', 'ConnectionManager');
 App::uses("CoProvisionerPluginTarget", "Model");
+App::uses("MitreId", "Model");
 App::uses('Security', 'Utility');
 App::uses('Hash', 'Utility');
 
@@ -219,11 +221,30 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
   public function connect($coId, $dbconfig = array())
   {
 
-    if (
-      empty($dbconfig)
-    ) {
-      throw new InvalidArgumentException(_txt('er.notfound', array(_txt('ct.rciam_stats_viewers.1'), $coId)));
+    if (empty($dbconfig)) {
+      // Get our connection information
+      $args = array();
+      $args['conditions']['CoEntitlementProvisionerTarget.co_id'] = $coId;
+      $args['contain'] = false;
+
+      $co_entitlement_provisioner_target = $this->find('first', $args);
+      if(empty($co_entitlement_provisioner_target)) {
+        throw new InvalidArgumentException(_txt('er.notfound', array(_txt('ct.co_entitlement_provisioner_target.1'), $coId)));
+      }
+      Configure::write('Security.useOpenSsl', true);
+      $dbconfig = array(
+        'datasource' => 'Database/' . EntitlementProvisionerDBDriverTypeEnum::type[$co_entitlement_provisioner_target['CoEntitlementProvisionerTarget']['type']],
+        'persistent' => $co_entitlement_provisioner_target['CoEntitlementProvisionerTarget']['persistent'],
+        'host'       => $co_entitlement_provisioner_target['CoEntitlementProvisionerTarget']['hostname'],
+        'login'      => $co_entitlement_provisioner_target['CoEntitlementProvisionerTarget']['username'],
+        'password'   => Security::decrypt(base64_decode($co_entitlement_provisioner_target['CoEntitlementProvisionerTarget']['password']), Configure::read('Security.salt')),
+        'database'   => $co_entitlement_provisioner_target['CoEntitlementProvisionerTarget']['databas'],
+        'encoding'   => $co_entitlement_provisioner_target['CoEntitlementProvisionerTarget']['encoding'],
+        'port'       => $co_entitlement_provisioner_target['CoEntitlementProvisionerTarget']['port'],
+      );
+      
     }
+
 
     // Port Value
     if (empty($dbconfig['port'])) {
@@ -256,11 +277,11 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
     $this->log(__METHOD__ . "::@", LOG_DEBUG);
     $this->log(__METHOD__ . "::action => " . $op, LOG_DEBUG);
 
+
     switch ($op) {
       case ProvisioningActionEnum::CoPersonAdded:
         break;
       case ProvisioningActionEnum::CoPersonDeleted:
-
         break;
       case ProvisioningActionEnum::CoPersonUpdated:
         break;
@@ -270,6 +291,41 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         // An update may cause an existing person to be written to VOMS for the first time
         // or for an unexpectedly removed entry to be replaced
 
+        break;
+      case ProvisioningActionEnum::CoGroupUpdated:
+        Configure::write('Security.useOpenSsl', true);
+        $coProvisioningTargetData['CoEntitlementProvisionerTarget']['password'] = Security::decrypt(base64_decode($coProvisioningTargetData['CoEntitlementProvisionerTarget']['password']), Configure::read('Security.salt'));
+        
+        $dbconfig['datasource'] = 'Database/' . EntitlementProvisionerDBDriverTypeEnum::type[$coProvisioningTargetData['CoEntitlementProvisionerTarget']['type']];
+        $dbconfig['host'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["hostname"];
+        $dbconfig['port'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["port"];
+        $dbconfig['database'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["databas"];
+        $dbconfig['password'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["password"];
+        $dbconfig['encoding'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["encoding"];
+        $dbconfig['login'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["username"];
+        
+        //For GROUP UPDATE
+        $datasource = $this->connect($provisioningData['CoGroup']['co_id'], $dbconfig);
+        $mitre_id = ClassRegistry::init('MitreIdUsers');
+        MitreId::config($mitre_id, $datasource, 'user_info');
+    
+        //Get Person by the epuid
+        $person = $mitre_id->find('all', array('conditions'=> array('MitreIdUsers.sub' => $provisioningData['CoGroup']['CoPerson']['actor_identifier'])));
+        if(!empty($person)) {
+          //Get User Entitlements From MitreId
+          $mitre_id_entitlements = ClassRegistry::init('MitreIdEntitlements');
+          MitreId::config($mitre_id_entitlements, $datasource, 'user_edu_person_entitlement');
+          $current_entitlements = MitreId::getCurrentEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id']);
+          
+          //Get New Entitlements From Comanage
+          $syncEntitlements = new SyncEntitlements($coProvisioningTargetData['CoEntitlementProvisionerTarget'],$provisioningData['CoGroup']['co_id']);
+          $new_entitlements = $syncEntitlements->getEntitlements($provisioningData['CoGroup']['CoPerson']['id']);
+    
+          //Delete Old Entitlements
+          MitreId::deleteOldEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id'], $current_entitlements, $new_entitlements);
+          //Insert New Entitlements
+          MitreId::insertNewEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id'],  $current_entitlements, $new_entitlements);  
+        }
         break;
       default:
         // Ignore all other actions

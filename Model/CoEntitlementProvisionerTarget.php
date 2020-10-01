@@ -218,19 +218,11 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
    * @throws MissingConnectionException The database connection failed
    */
 
-  public function connect($coId, $dbconfig = array())
+  public function connect($coId, $dbconfig = array(), $co_entitlement_provisioner_target = NULL)
   {
 
     if (empty($dbconfig)) {
-      // Get our connection information
-      $args = array();
-      $args['conditions']['CoEntitlementProvisionerTarget.co_id'] = $coId;
-      $args['contain'] = false;
-
-      $co_entitlement_provisioner_target = $this->find('first', $args);
-      if(empty($co_entitlement_provisioner_target)) {
-        throw new InvalidArgumentException(_txt('er.notfound', array(_txt('ct.co_entitlement_provisioner_target.1'), $coId)));
-      }
+      
       Configure::write('Security.useOpenSsl', true);
       $dbconfig = array(
         'datasource' => 'Database/' . EntitlementProvisionerDBDriverTypeEnum::type[$co_entitlement_provisioner_target['CoEntitlementProvisionerTarget']['type']],
@@ -276,9 +268,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
   {
     $this->log(__METHOD__ . "::@", LOG_DEBUG);
     $this->log(__METHOD__ . "::action => " . $op, LOG_DEBUG);
-
- 
-
+    
     switch ($op) {
       case ProvisioningActionEnum::CoPersonAdded:
         break;
@@ -312,37 +302,31 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
 
         if(!empty($co_id) && !empty($co_person_identifier) && !empty($co_person_id)) {
           $provisionAction = true;
-          if($_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'] && $_REQUEST['data']['CoPersonRole']['status'] == 'S')) { //SUSPEND
-            $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoPersonRole Form] Suspended User with id:' . $co_person_id, LOG_DEBUG);
-          }
-          else if($_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'] && $_REQUEST['data']['CoPersonRole']['status'] == 'A')) { //ACTIVE
-            $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoPersonRole Form] Active User with id:' . $co_person_id, LOG_DEBUG);
-          } 
-          else if(strpos(array_keys($_REQUEST)[0],'/co_group_members/delete/')!==FALSE) { //delete co group member
-            $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoGroupMember] delete from group, user with id:' . $co_person_id, LOG_DEBUG);
-          }
-          else if(strpos(array_keys($_REQUEST)[0],'/co_group_members/add_json')!==FALSE) { //delete co group member
-            $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoGroupMember] REST API CALL: add group to user with id:' . $co_person_id, LOG_DEBUG);
-          } 
-          else if ($_REQUEST['_method'] == 'POST' && !empty($_REQUEST['data']['CoPerson']) && $_REQUEST['data']['CoPerson']['confirm'] == '1' && isset($_REQUEST['/co_people/expunge/'. $co_person_id])) { //DELETE
-            $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => Delete User with id:' . $co_person_id, LOG_DEBUG);
-            $deleteAll = true;
-          }
-          else {
-            $provisionAction = FALSE; 
-          }
-          if($provisionAction == TRUE) {
-          Configure::write('Security.useOpenSsl', true);
-          $coProvisioningTargetData['CoEntitlementProvisionerTarget']['password'] = Security::decrypt(base64_decode($coProvisioningTargetData['CoEntitlementProvisionerTarget']['password']), Configure::read('Security.salt'));
-          $dbconfig['datasource'] = 'Database/' . EntitlementProvisionerDBDriverTypeEnum::type[$coProvisioningTargetData['CoEntitlementProvisionerTarget']['type']];
-          $dbconfig['host'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["hostname"];
-          $dbconfig['port'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["port"];
-          $dbconfig['database'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["databas"];
-          $dbconfig['password'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["password"];
-          $dbconfig['encoding'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["encoding"];
-          $dbconfig['login'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["username"];       
-          //For GROUP UPDATE
-          $datasource = $this->connect($co_id, $dbconfig);
+        // Check if its an action we want to provision
+        if($_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'] && $_REQUEST['data']['CoPersonRole']['status'] == 'S')) { //SUSPEND
+          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoPersonRole Form] Suspended User with id:' . $co_person_id, LOG_DEBUG);
+        }
+        else if($_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'] && $_REQUEST['data']['CoPersonRole']['status'] == 'A')) { //ACTIVE
+          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoPersonRole Form] Active User with id:' . $co_person_id, LOG_DEBUG);
+        }
+        else if($_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'])) { //Another Action of Co Person Role
+          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoPersonRole Form] Action for User with id:' . $co_person_id, LOG_DEBUG);
+        }
+        else if(strpos(array_keys($_REQUEST)[0],'/co_group_members/delete/')!==FALSE) { //delete co group member
+          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoGroupMember] delete from group, user with id:' . $co_person_id, LOG_DEBUG);
+        }
+        else if(strpos(array_keys($_REQUEST)[0],'/co_group_members/add_json')!==FALSE) { //delete co group member
+          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoGroupMember] REST API CALL: add group to user with id:' . $co_person_id, LOG_DEBUG);
+        } 
+        else if ($_REQUEST['_method'] == 'POST' && !empty($_REQUEST['data']['CoPerson']) && $_REQUEST['data']['CoPerson']['confirm'] == '1' && isset($_REQUEST['/co_people/expunge/'. $co_person_id])) { //DELETE
+          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => Delete User with id:' . $co_person_id, LOG_DEBUG);
+          $deleteAll = true;
+        }
+        else {
+          $provisionAction = FALSE; 
+        }
+        if($provisionAction == TRUE) {
+          $datasource = $this->connect($co_id, array(), $coProvisioningTargetData);
           $mitre_id = ClassRegistry::init('MitreIdUsers');
           MitreId::config($mitre_id, $datasource, 'user_info');
       

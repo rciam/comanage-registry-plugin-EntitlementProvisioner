@@ -50,6 +50,7 @@ class MitreId
     $deleteEntitlements = array_diff($current_entitlements, $new_entitlements);
     //Remove only those from check-in
     $deleteEntitlements  = preg_grep(MitreId::$entitlementFormat, $deleteEntitlements);
+    CakeLog::write('debug', __METHOD__ . ':: entitlements to be deleted from MitreId' . var_export($deleteEntitlements, true), LOG_DEBUG);
     if(!empty($deleteEntitlements)) {
       //Delete
       $deleteEntitlementsParam = '(\'' . implode("','", $deleteEntitlements) . '\')';
@@ -57,6 +58,19 @@ class MitreId
         . ' WHERE user_id=' . $user_id
         . ' AND edu_person_entitlement IN ' . $deleteEntitlementsParam);
     }
+  }
+  
+  /**
+   * deleteAllEntitlements
+   *
+   * @param  mixed $mitreId
+   * @param  integer $user_id
+   * @return void
+   */
+  public static function deleteAllEntitlements($mitreId, $user_id) {
+    CakeLog::write('debug', __METHOD__ . ':: delete all entitlements from mitreid', LOG_DEBUG);
+    $mitreId->query('DELETE FROM user_edu_person_entitlement'
+    . ' WHERE user_id=' . $user_id);
   }
   
   /**
@@ -70,6 +84,7 @@ class MitreId
    */
   public static function insertNewEntitlements($mitreId, $user_id, $current_entitlements, $new_entitlements) {
     $insertEntitlements = array_diff($new_entitlements, $current_entitlements);
+    CakeLog::write('debug', __METHOD__ . ':: entitlements to be inserted to MitreId' . var_export($insertEntitlements, true), LOG_DEBUG);
     if(!empty($insertEntitlements)) {
       //Insert
       $insertEntitlementsParam = '';

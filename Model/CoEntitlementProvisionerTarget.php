@@ -277,61 +277,98 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
     $this->log(__METHOD__ . "::@", LOG_DEBUG);
     $this->log(__METHOD__ . "::action => " . $op, LOG_DEBUG);
 
+ 
 
     switch ($op) {
       case ProvisioningActionEnum::CoPersonAdded:
         break;
       case ProvisioningActionEnum::CoPersonDeleted:
+        $co_id = $provisioningData['Co']['id'];
+        $co_person_identifier = $provisioningData['CoPerson']['actor_identifier'];
+        $co_person_id = $provisioningData['CoPerson']['id'];
         break;
       case ProvisioningActionEnum::CoPersonUpdated:
+        $co_id = $provisioningData['Co']['id'];
+        $co_person_identifier = $provisioningData['CoPerson']['actor_identifier'];
+        $co_person_id = $provisioningData['CoPerson']['id'];
         break;
       case ProvisioningActionEnum::CoPersonExpired:
         break;
       case ProvisioningActionEnum::CoPersonPetitionProvisioned:
         // An update may cause an existing person to be written to VOMS for the first time
         // or for an unexpectedly removed entry to be replaced
-
         break;
       case ProvisioningActionEnum::CoGroupUpdated:
-        Configure::write('Security.useOpenSsl', true);
-        $coProvisioningTargetData['CoEntitlementProvisionerTarget']['password'] = Security::decrypt(base64_decode($coProvisioningTargetData['CoEntitlementProvisionerTarget']['password']), Configure::read('Security.salt'));
-        
-        $dbconfig['datasource'] = 'Database/' . EntitlementProvisionerDBDriverTypeEnum::type[$coProvisioningTargetData['CoEntitlementProvisionerTarget']['type']];
-        $dbconfig['host'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["hostname"];
-        $dbconfig['port'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["port"];
-        $dbconfig['database'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["databas"];
-        $dbconfig['password'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["password"];
-        $dbconfig['encoding'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["encoding"];
-        $dbconfig['login'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["username"];
-        
-        //For GROUP UPDATE
-        $datasource = $this->connect($provisioningData['CoGroup']['co_id'], $dbconfig);
-        $mitre_id = ClassRegistry::init('MitreIdUsers');
-        MitreId::config($mitre_id, $datasource, 'user_info');
-    
-        //Get Person by the epuid
-        $person = $mitre_id->find('all', array('conditions'=> array('MitreIdUsers.sub' => $provisioningData['CoGroup']['CoPerson']['actor_identifier'])));
-        if(!empty($person)) {
-          //Get User Entitlements From MitreId
-          $mitre_id_entitlements = ClassRegistry::init('MitreIdEntitlements');
-          MitreId::config($mitre_id_entitlements, $datasource, 'user_edu_person_entitlement');
-          $current_entitlements = MitreId::getCurrentEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id']);
-          
-          //Get New Entitlements From Comanage
-          $syncEntitlements = new SyncEntitlements($coProvisioningTargetData['CoEntitlementProvisionerTarget'],$provisioningData['CoGroup']['co_id']);
-          $new_entitlements = $syncEntitlements->getEntitlements($provisioningData['CoGroup']['CoPerson']['id']);
-    
-          //Delete Old Entitlements
-          MitreId::deleteOldEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id'], $current_entitlements, $new_entitlements);
-          //Insert New Entitlements
-          MitreId::insertNewEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id'],  $current_entitlements, $new_entitlements);  
-        }
+        $co_id = $provisioningData['CoGroup']['co_id'];
+        $co_person_identifier = $provisioningData['CoGroup']['CoPerson']['actor_identifier'];
+        $co_person_id = $provisioningData['CoGroup']['CoPerson']['id'];
         break;
       default:
         // Ignore all other actions
         $this->log(__METHOD__ . '::Provisioning action ' . $op . ' not allowed/implemented', LOG_DEBUG);
         return true;
         break;
-    }
+      }
+
+        if(!empty($co_id) && !empty($co_person_identifier) && !empty($co_person_id)) {
+          $provisionAction = true;
+          if($_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'] && $_REQUEST['data']['CoPersonRole']['status'] == 'S')) { //SUSPEND
+            $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoPersonRole Form] Suspended User with id:' . $co_person_id, LOG_DEBUG);
+          }
+          else if($_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'] && $_REQUEST['data']['CoPersonRole']['status'] == 'A')) { //ACTIVE
+            $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoPersonRole Form] Active User with id:' . $co_person_id, LOG_DEBUG);
+          } 
+          else if(strpos(array_keys($_REQUEST)[0],'/co_group_members/delete/')!==FALSE) { //delete co group member
+            $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoGroupMember] delete from group, user with id:' . $co_person_id, LOG_DEBUG);
+          }
+          else if(strpos(array_keys($_REQUEST)[0],'/co_group_members/add_json')!==FALSE) { //delete co group member
+            $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoGroupMember] REST API CALL: add group to user with id:' . $co_person_id, LOG_DEBUG);
+          } 
+          else if ($_REQUEST['_method'] == 'POST' && !empty($_REQUEST['data']['CoPerson']) && $_REQUEST['data']['CoPerson']['confirm'] == '1' && isset($_REQUEST['/co_people/expunge/'. $co_person_id])) { //DELETE
+            $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => Delete User with id:' . $co_person_id, LOG_DEBUG);
+            $deleteAll = true;
+          }
+          else {
+            $provisionAction = FALSE; 
+          }
+          if($provisionAction == TRUE) {
+          Configure::write('Security.useOpenSsl', true);
+          $coProvisioningTargetData['CoEntitlementProvisionerTarget']['password'] = Security::decrypt(base64_decode($coProvisioningTargetData['CoEntitlementProvisionerTarget']['password']), Configure::read('Security.salt'));
+          $dbconfig['datasource'] = 'Database/' . EntitlementProvisionerDBDriverTypeEnum::type[$coProvisioningTargetData['CoEntitlementProvisionerTarget']['type']];
+          $dbconfig['host'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["hostname"];
+          $dbconfig['port'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["port"];
+          $dbconfig['database'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["databas"];
+          $dbconfig['password'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["password"];
+          $dbconfig['encoding'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["encoding"];
+          $dbconfig['login'] = $coProvisioningTargetData["CoEntitlementProvisionerTarget"]["username"];       
+          //For GROUP UPDATE
+          $datasource = $this->connect($co_id, $dbconfig);
+          $mitre_id = ClassRegistry::init('MitreIdUsers');
+          MitreId::config($mitre_id, $datasource, 'user_info');
+      
+          //Get Person by the epuid
+          $person = $mitre_id->find('all', array('conditions'=> array('MitreIdUsers.sub' => $co_person_identifier)));
+          if(!empty($person)) {
+            //Get User Entitlements From MitreId
+            $mitre_id_entitlements = ClassRegistry::init('MitreIdEntitlements');
+            MitreId::config($mitre_id_entitlements, $datasource, 'user_edu_person_entitlement');
+            $current_entitlements = MitreId::getCurrentEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id']);
+            $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => current_entitlements from MitreId' . var_export($current_entitlements, true), LOG_DEBUG);           
+            //Get New Entitlements From Comanage
+            $syncEntitlements = new SyncEntitlements($coProvisioningTargetData['CoEntitlementProvisionerTarget'],$co_id);
+            $new_entitlements = $syncEntitlements->getEntitlements($co_person_id);
+            $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => new_entitlements from comanage' . var_export($new_entitlements, true), LOG_DEBUG);           
+            if(!empty($deleteAll)) {
+              MitreId::deleteAllEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id']);
+            }
+            else {
+              //Delete Old Entitlements
+              MitreId::deleteOldEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id'], $current_entitlements, $new_entitlements);
+              //Insert New Entitlements
+              MitreId::insertNewEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id'],  $current_entitlements, $new_entitlements);  
+            }
+          }
+        }
+      } 
   }
 }

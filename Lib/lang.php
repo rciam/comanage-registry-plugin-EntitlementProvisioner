@@ -57,5 +57,8 @@ $cm_entitlement_provisioner_texts['en_US'] = array(
   'pl.entitlement_provisioner.urn_legacy.desc'         => 'A boolean value for controlling whether to generate eduPersonEntitlement URN values using the legacy syntax.',
   'pl.entitlement_provisioner.vo_group_prefix'         => 'VO Group Prefix',
   'pl.entitlement_provisioner.vo_group_prefix.desc'    => 'A group prefix to be used for the composition of the entitlements.',
+  'pl.entitlement_provisioner.entitlement_format'         => 'Entitlement Format',
+  'pl.entitlement_provisioner.entitlement_format.desc'    => 'Define a regex for entitlements\' format you want to remove. Leave it blank for removing all old entitlements.',
+
   
 );

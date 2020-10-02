@@ -42,6 +42,7 @@ class AppSchema extends CakeSchema {
     'urn_legacy' => array('type' => 'string', 'null' => true, 'default' => null, 'length' => 128),
     'vo_whitelist' => array('type' => 'text', 'null' => true, 'default' => null, 'length' => 4000),
     'vo_group_prefix' => array('type' => 'string', 'null' => true, 'default' => null, 'length' => 4000),
+    'entitlement_format' => array('type' => 'text', 'null' => true, 'default' => null, 'length' => 256),
     'created' => array('type' => 'datetime', 'null' => true, 'default' => null),
     'modified' => array('type' => 'datetime', 'null' => true, 'default' => null),
     'deleted' => array('type' => 'boolean', 'null' => false, 'default' => false),

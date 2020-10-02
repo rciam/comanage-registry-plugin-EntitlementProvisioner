@@ -396,6 +396,21 @@ $token_key = $this->request->params['_Token']['key'];
                         ?>
                       </div>
                   </li>
+                  <li>
+                  <div class="field-name">
+                      <div class="field-title">
+                        <?php print $this->Form->label('entitlement_format',_txt('pl.entitlement_provisioner.entitlement_format')); ?>
+                      </div>
+                      <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.entitlement_format.desc'); ?></div>
+                    </div>
+                    <div class="field-info">
+                        <?php
+                          $value = empty($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['entitlement_format']) ? ''
+                          : filter_var($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['entitlement_format'],FILTER_SANITIZE_SPECIAL_CHARS);
+                          print $this->Form->input('entitlement_format', array('size' => 50,'value' => $value));
+                        ?>
+                      </div>
+                  </li>
                 </ul>
             </div>
           </li>

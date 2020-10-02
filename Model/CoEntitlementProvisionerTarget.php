@@ -207,6 +207,11 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
       'required' => false,
       'allowEmpty' => true
     ),
+    'entitlement_format' => array(
+      'rule' => '/.*/',
+      'required' => false,
+      'allowEmpty' => true
+    ),
   );
 
   /**
@@ -218,7 +223,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
    * @throws MissingConnectionException The database connection failed
    */
 
-  public function connect($coId, $dbconfig = array(), $co_entitlement_provisioner_target = NULL)
+  public function connect($coPersonId, $dbconfig = array(), $co_entitlement_provisioner_target = NULL)
   {
 
     if (empty($dbconfig)) {
@@ -248,8 +253,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
     }
 
     // Database connection per CO
-    $datasource = ConnectionManager::create('connection_' . $coId, $dbconfig);
-
+    $datasource = ConnectionManager::create('connection_' . $coPersonId, $dbconfig);
     return $datasource;
   }
 
@@ -268,7 +272,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
   {
     $this->log(__METHOD__ . "::@", LOG_DEBUG);
     $this->log(__METHOD__ . "::action => " . $op, LOG_DEBUG);
-    
+
     switch ($op) {
       case ProvisioningActionEnum::CoPersonAdded:
         break;
@@ -293,6 +297,8 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         $co_person_identifier = $provisioningData['CoGroup']['CoPerson']['actor_identifier'];
         $co_person_id = $provisioningData['CoGroup']['CoPerson']['id'];
         break;
+      case ProvisioningActionEnum::CoGroupDeleted: 
+        break;
       default:
         // Ignore all other actions
         $this->log(__METHOD__ . '::Provisioning action ' . $op . ' not allowed/implemented', LOG_DEBUG);
@@ -300,23 +306,29 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         break;
       }
 
-        if(!empty($co_id) && !empty($co_person_identifier) && !empty($co_person_id)) {
-          $provisionAction = true;
+      if(!empty($co_id) && !empty($co_person_identifier) && !empty($co_person_id)) {
+        $provisionAction = true;
         // Check if its an action we want to provision
         if($_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'] && $_REQUEST['data']['CoPersonRole']['status'] == 'S')) { //SUSPEND
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoPersonRole Form] Suspended User with id:' . $co_person_id, LOG_DEBUG);
         }
-        else if($_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'] && $_REQUEST['data']['CoPersonRole']['status'] == 'A')) { //ACTIVE
+        else if(($_REQUEST['_method'] == 'PUT' || $_REQUEST['_method'] == 'POST') && !empty($_REQUEST['data']['CoPersonRole']) && $_REQUEST['data']['CoPersonRole']['status'] == 'A') { //ACTIVE
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoPersonRole Form] Active User with id:' . $co_person_id, LOG_DEBUG);
         }
         else if($_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'])) { //Another Action of Co Person Role
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoPersonRole Form] Action for User with id:' . $co_person_id, LOG_DEBUG);
+        }
+        else if(strpos(array_keys($_REQUEST)[0],'/co_person_roles/delete/')!==FALSE) { //delete co person role
+          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [Co Person Roles] delete role from user with id:' . $co_person_id, LOG_DEBUG);
         }
         else if(strpos(array_keys($_REQUEST)[0],'/co_group_members/delete/')!==FALSE) { //delete co group member
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoGroupMember] delete from group, user with id:' . $co_person_id, LOG_DEBUG);
         }
         else if(strpos(array_keys($_REQUEST)[0],'/co_group_members/add_json')!==FALSE) { //delete co group member
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoGroupMember] REST API CALL: add group to user with id:' . $co_person_id, LOG_DEBUG);
+        }
+        else if(strpos(array_keys($_REQUEST)[0],'/co_group_members/')!==FALSE) { //co group member action
+          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoGroupMember Action] for user with id:' . $co_person_id, LOG_DEBUG);
         } 
         else if ($_REQUEST['_method'] == 'POST' && !empty($_REQUEST['data']['CoPerson']) && $_REQUEST['data']['CoPerson']['confirm'] == '1' && isset($_REQUEST['/co_people/expunge/'. $co_person_id])) { //DELETE
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => Delete User with id:' . $co_person_id, LOG_DEBUG);
@@ -326,33 +338,37 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
           $provisionAction = FALSE; 
         }
         if($provisionAction == TRUE) {
-          $datasource = $this->connect($co_id, array(), $coProvisioningTargetData);
+          $datasource = $this->connect($co_person_id, array(), $coProvisioningTargetData);
           $mitre_id = ClassRegistry::init('MitreIdUsers');
           MitreId::config($mitre_id, $datasource, 'user_info');
       
           //Get Person by the epuid
           $person = $mitre_id->find('all', array('conditions'=> array('MitreIdUsers.sub' => $co_person_identifier)));
-          if(!empty($person)) {
+          if(!empty($person)) { 
             //Get User Entitlements From MitreId
             $mitre_id_entitlements = ClassRegistry::init('MitreIdEntitlements');
-            MitreId::config($mitre_id_entitlements, $datasource, 'user_edu_person_entitlement');
-            $current_entitlements = MitreId::getCurrentEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id']);
-            $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => current_entitlements from MitreId' . var_export($current_entitlements, true), LOG_DEBUG);           
-            //Get New Entitlements From Comanage
-            $syncEntitlements = new SyncEntitlements($coProvisioningTargetData['CoEntitlementProvisionerTarget'],$co_id);
-            $new_entitlements = $syncEntitlements->getEntitlements($co_person_id);
-            $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => new_entitlements from comanage' . var_export($new_entitlements, true), LOG_DEBUG);           
             if(!empty($deleteAll)) {
-              MitreId::deleteAllEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id']);
+              MitreId::deleteAllEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id']);  
             }
-            else {
+            else{
+              MitreId::config($mitre_id_entitlements, $datasource, 'user_edu_person_entitlement', $coProvisioningTargetData['CoEntitlementProvisionerTarget']['entitlement_format']);
+              $current_entitlements = MitreId::getCurrentEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id']);
+              $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => current_entitlements from MitreId' . var_export($current_entitlements, true), LOG_DEBUG);           
+              //Get New Entitlements From Comanage
+              $syncEntitlements = new SyncEntitlements($coProvisioningTargetData['CoEntitlementProvisionerTarget'],$co_id);
+              $new_entitlements = $syncEntitlements->getEntitlements($co_person_id);
+              $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => new_entitlements from comanage' . var_export($new_entitlements, true), LOG_DEBUG);           
+        
               //Delete Old Entitlements
               MitreId::deleteOldEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id'], $current_entitlements, $new_entitlements);
               //Insert New Entitlements
               MitreId::insertNewEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id'],  $current_entitlements, $new_entitlements);  
-            }
+              
           }
         }
-      } 
+        ConnectionManager::drop('connection_' . $co_person_id);
+      }
+    } 
+    
   }
 }

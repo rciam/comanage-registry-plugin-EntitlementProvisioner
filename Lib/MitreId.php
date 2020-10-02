@@ -8,7 +8,7 @@ App::uses('CakeLog', 'Log');
 class MitreId
 {
 
-  public static $entitlementFormat = '/(^urn:mace:egi.eu:(.*)#aai.egi.eu$)|(^urn:mace:egi.eu:aai.egi.eu:(.*))/i';
+  //public static $entitlementFormat = '/(^urn:mace:egi.eu:(.*)#aai.egi.eu$)|(^urn:mace:egi.eu:aai.egi.eu:(.*))/i';
   
   /**
    * config
@@ -18,10 +18,11 @@ class MitreId
    * @param  string $table_name
    * @return void
    */
-  public static function config($mitreId, $datasource, $table_name)
+  public static function config($mitreId, $datasource, $table_name, $entitlement_format = NULL)
   {
     $mitreId->useDbConfig = $datasource->configKeyName;
     $mitreId->useTable = $table_name;
+    $mitreId->entitlementFormat = $entitlement_format;
   }
   
   /**
@@ -49,14 +50,16 @@ class MitreId
   public static function deleteOldEntitlements($mitreId, $user_id, $current_entitlements, $new_entitlements) {
     $deleteEntitlements = array_diff($current_entitlements, $new_entitlements);
     //Remove only those from check-in
-    $deleteEntitlements  = preg_grep(MitreId::$entitlementFormat, $deleteEntitlements);
+    if(!empty($mitreId->entitlementFormat)) {
+      $deleteEntitlements  = preg_grep($mitreId->entitlementFormat, $deleteEntitlements);
+    }
     CakeLog::write('debug', __METHOD__ . ':: entitlements to be deleted from MitreId' . var_export($deleteEntitlements, true), LOG_DEBUG);
     if(!empty($deleteEntitlements)) {
       //Delete
       $deleteEntitlementsParam = '(\'' . implode("','", $deleteEntitlements) . '\')';
-      $mitreId->query('DELETE FROM user_edu_person_entitlement'
-        . ' WHERE user_id=' . $user_id
-        . ' AND edu_person_entitlement IN ' . $deleteEntitlementsParam);
+    //  $mitreId->query('DELETE FROM user_edu_person_entitlement'
+    //    . ' WHERE user_id=' . $user_id
+    //    . ' AND edu_person_entitlement IN ' . $deleteEntitlementsParam);
     }
   }
   
@@ -69,8 +72,8 @@ class MitreId
    */
   public static function deleteAllEntitlements($mitreId, $user_id) {
     CakeLog::write('debug', __METHOD__ . ':: delete all entitlements from mitreid', LOG_DEBUG);
-    $mitreId->query('DELETE FROM user_edu_person_entitlement'
-    . ' WHERE user_id=' . $user_id);
+  //  $mitreId->query('DELETE FROM user_edu_person_entitlement'
+  //  . ' WHERE user_id=' . $user_id);
   }
   
   /**
@@ -91,7 +94,7 @@ class MitreId
       foreach ($insertEntitlements as $entitlement) {
         $insertEntitlementsParam .= '(' . $user_id . ',\'' . $entitlement . '\'),';
       }
-      $mitreId->query('INSERT INTO user_edu_person_entitlement (user_id, edu_person_entitlement) VALUES ' . substr($insertEntitlementsParam, 0, -1));
+     // $mitreId->query('INSERT INTO user_edu_person_entitlement (user_id, edu_person_entitlement) VALUES ' . substr($insertEntitlementsParam, 0, -1));
     }
   }
 }

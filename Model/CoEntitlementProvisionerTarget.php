@@ -220,7 +220,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
                 IdentifierEnum::Enterprise,
                 IdentifierEnum::ePPN,
                 IdentifierEnum::ePTID,
-                IdentifierEnum::ePUID,
+//                IdentifierEnum::ePUID,
                 IdentifierEnum::Mail,
                 IdentifierEnum::National,
                 IdentifierEnum::Network,
@@ -307,7 +307,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         $co_id = $provisioningData['Co']['id'];
         $co_person_identifier = $provisioningData['CoPerson']['actor_identifier'];
         $co_person_id = $provisioningData['CoPerson']['id'];
-        $ids = Hash::extract($provisioningData['Identifier'], '{n}[type=' . IdentifierEnum::ePUID . '].identifier');
+       // $ids = Hash::extract($provisioningData['Identifier'], '{n}[type=' . IdentifierEnum::ePUID . '].identifier');
         break;
       case ProvisioningActionEnum::CoPersonExpired:
         break;

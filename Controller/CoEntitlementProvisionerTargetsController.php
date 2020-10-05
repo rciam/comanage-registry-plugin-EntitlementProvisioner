@@ -101,7 +101,7 @@ class CoEntitlementProvisionerTargetsController extends SPTController {
       IdentifierEnum::Enterprise => 'Enterprise',
       IdentifierEnum::ePPN => 'ePPN',
       IdentifierEnum::ePTID => 'ePTID',
-      IdentifierEnum::ePUID => 'ePUID',
+     // IdentifierEnum::ePUID => 'ePUID',
       IdentifierEnum::Mail => 'Mail',
       IdentifierEnum::National => 'National',
       IdentifierEnum::Network => 'Network',

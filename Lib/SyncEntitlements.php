@@ -523,7 +523,7 @@ class SyncEntitlements{
         array_filter(
             $cou_memberships,
             static function ($value) use ($voName) {
-                if ($value['group_name'] === ($voName . ':admins')) {
+                if (!empty($value['group_name']) && $value['group_name'] === ($voName . ':admins')) {
                     return $value;
                 }
             }

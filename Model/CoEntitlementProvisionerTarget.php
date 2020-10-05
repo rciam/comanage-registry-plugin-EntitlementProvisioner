@@ -216,20 +216,20 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
       'rule' => array(
         'inList',
           array(
-                IdentifierEnum::Badge,
-                IdentifierEnum::Enterprise,
-                IdentifierEnum::ePPN,
-                IdentifierEnum::ePTID,
-//                IdentifierEnum::ePUID,
-                IdentifierEnum::Mail,
-                IdentifierEnum::National,
-                IdentifierEnum::Network,
-                IdentifierEnum::OpenID,
-                IdentifierEnum::ORCID,
-                IdentifierEnum::ProvisioningTarget,
-                IdentifierEnum::Reference,
-                IdentifierEnum::SORID,
-                IdentifierEnum::UID
+                EntitlementProvisionerIdentifierEnum::Badge,
+                EntitlementProvisionerIdentifierEnum::Enterprise,
+                EntitlementProvisionerIdentifierEnum::ePPN,
+                EntitlementProvisionerIdentifierEnum::ePTID,
+                EntitlementProvisionerIdentifierEnum::ePUID,
+                EntitlementProvisionerIdentifierEnum::Mail,
+                EntitlementProvisionerIdentifierEnum::National,
+                EntitlementProvisionerIdentifierEnum::Network,
+                EntitlementProvisionerIdentifierEnum::OpenID,
+                EntitlementProvisionerIdentifierEnum::ORCID,
+                EntitlementProvisionerIdentifierEnum::ProvisioningTarget,
+                EntitlementProvisionerIdentifierEnum::Reference,
+                EntitlementProvisionerIdentifierEnum::SORID,
+                EntitlementProvisionerIdentifierEnum::UID
           )
       ),
       'required' => true

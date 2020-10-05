@@ -68,3 +68,39 @@ class EntitlementProvisionerDateEnum
         'yearly'    => 'yearly',
     );
 }
+
+class EntitlementProvisionerIdentifierEnum
+{
+  const Badge              = 'badge';
+  const Enterprise         = 'enterprise';
+  const ePPN               = 'eppn';
+  const ePTID              = 'eptid';
+  const ePUID              = 'epuid';
+  const Mail               = 'mail';
+  const National           = 'national';
+  const Network            = 'network';
+  const OpenID             = 'openid';
+  const ORCID              = 'orcid';
+  const ProvisioningTarget = 'provisioningtarget';
+  const Reference          = 'reference';
+  const SORID              = 'sorid';
+  const UID                = 'uid';
+
+  const type = array(
+    EntitlementProvisionerIdentifierEnum::Badge => 'badge',
+    EntitlementProvisionerIdentifierEnum::Enterprise => 'enterprise',
+    EntitlementProvisionerIdentifierEnum::ePPN => 'eppn',
+    EntitlementProvisionerIdentifierEnum::ePTID => 'eptid',
+    EntitlementProvisionerIdentifierEnum::ePUID => 'epuid',
+    EntitlementProvisionerIdentifierEnum::Mail => 'mail',
+    EntitlementProvisionerIdentifierEnum::National => 'national',
+    EntitlementProvisionerIdentifierEnum::Network => 'network',
+    EntitlementProvisionerIdentifierEnum::OpenID => 'openid',
+    EntitlementProvisionerIdentifierEnum::ORCID => ' orcid',
+    EntitlementProvisionerIdentifierEnum::ProvisioningTarget => 'provisioningtarget',
+    EntitlementProvisionerIdentifierEnum::Reference => 'reference',
+    EntitlementProvisionerIdentifierEnum::SORID => 'sorid',
+    EntitlementProvisionerIdentifierEnum::UID => 'uid'
+  );
+
+}

@@ -335,10 +335,10 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
       if(!empty($co_id) && !empty($co_person_identifier) && !empty($co_person_id)) {
         $provisionAction = true;
         // Check if its an action we want to provision
-        if(isset($_REQUEST['_method'] ) && $_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'] && $_REQUEST['data']['CoPersonRole']['status'] == 'S')) { //SUSPEND
+        if(!empty($_REQUEST['_method']) && $_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'] && $_REQUEST['data']['CoPersonRole']['status'] == 'S')) { //SUSPEND
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoPersonRole Form] Suspended User with id:' . $co_person_id, LOG_DEBUG);
         }
-        else if((!empty($_REQUEST['_method']) && $_REQUEST['_method'] == 'PUT' || $_REQUEST['_method'] == 'POST') && !empty($_REQUEST['data']['CoPersonRole']) && $_REQUEST['data']['CoPersonRole']['status'] == 'A') { //ACTIVE
+        else if((!empty($_REQUEST['_method']) && ($_REQUEST['_method'] == 'PUT' || $_REQUEST['_method'] == 'POST')) && !empty($_REQUEST['data']['CoPersonRole']) && $_REQUEST['data']['CoPersonRole']['status'] == 'A') { //ACTIVE
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoPersonRole Form] Active User with id:' . $co_person_id, LOG_DEBUG);
         }
         else if(!empty($_REQUEST['_method'] ) && $_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'])) { //Another Action of Co Person Role

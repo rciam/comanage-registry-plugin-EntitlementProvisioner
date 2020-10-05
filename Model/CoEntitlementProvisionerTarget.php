@@ -338,10 +338,10 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         if(isset($_REQUEST['_method'] ) && $_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'] && $_REQUEST['data']['CoPersonRole']['status'] == 'S')) { //SUSPEND
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoPersonRole Form] Suspended User with id:' . $co_person_id, LOG_DEBUG);
         }
-        else if((isset($_REQUEST['_method']) && $_REQUEST['_method'] == 'PUT' || $_REQUEST['_method'] == 'POST') && !empty($_REQUEST['data']['CoPersonRole']) && $_REQUEST['data']['CoPersonRole']['status'] == 'A') { //ACTIVE
+        else if((!empty($_REQUEST['_method']) && $_REQUEST['_method'] == 'PUT' || $_REQUEST['_method'] == 'POST') && !empty($_REQUEST['data']['CoPersonRole']) && $_REQUEST['data']['CoPersonRole']['status'] == 'A') { //ACTIVE
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoPersonRole Form] Active User with id:' . $co_person_id, LOG_DEBUG);
         }
-        else if(isset($_REQUEST['_method'] ) && $_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'])) { //Another Action of Co Person Role
+        else if(!empty($_REQUEST['_method'] ) && $_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'])) { //Another Action of Co Person Role
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoPersonRole Form] Action for User with id:' . $co_person_id, LOG_DEBUG);
         }
         else if(strpos(array_keys($_REQUEST)[0],'/co_person_roles/delete/')!==FALSE) { //delete co person role

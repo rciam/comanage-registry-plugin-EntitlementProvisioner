@@ -309,13 +309,13 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
       if(!empty($co_id) && !empty($co_person_identifier) && !empty($co_person_id)) {
         $provisionAction = true;
         // Check if its an action we want to provision
-        if($_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'] && $_REQUEST['data']['CoPersonRole']['status'] == 'S')) { //SUSPEND
+        if(isset($_REQUEST['_method'] ) && $_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'] && $_REQUEST['data']['CoPersonRole']['status'] == 'S')) { //SUSPEND
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoPersonRole Form] Suspended User with id:' . $co_person_id, LOG_DEBUG);
         }
-        else if(($_REQUEST['_method'] == 'PUT' || $_REQUEST['_method'] == 'POST') && !empty($_REQUEST['data']['CoPersonRole']) && $_REQUEST['data']['CoPersonRole']['status'] == 'A') { //ACTIVE
+        else if((isset($_REQUEST['_method']) && $_REQUEST['_method'] == 'PUT' || $_REQUEST['_method'] == 'POST') && !empty($_REQUEST['data']['CoPersonRole']) && $_REQUEST['data']['CoPersonRole']['status'] == 'A') { //ACTIVE
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoPersonRole Form] Active User with id:' . $co_person_id, LOG_DEBUG);
         }
-        else if($_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'])) { //Another Action of Co Person Role
+        else if(isset($_REQUEST['_method'] ) && $_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'])) { //Another Action of Co Person Role
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoPersonRole Form] Action for User with id:' . $co_person_id, LOG_DEBUG);
         }
         else if(strpos(array_keys($_REQUEST)[0],'/co_person_roles/delete/')!==FALSE) { //delete co person role
@@ -365,6 +365,10 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
               MitreId::insertNewEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id'],  $current_entitlements, $new_entitlements);  
               
           }
+        }
+        else {
+          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => person id not found in mitre' . $co_person_id . ' and identifier: ' . $co_person_identifier, LOG_DEBUG);           
+        
         }
         ConnectionManager::drop('connection_' . $co_person_id);
       }

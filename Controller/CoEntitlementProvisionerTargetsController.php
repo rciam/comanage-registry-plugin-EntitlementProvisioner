@@ -96,7 +96,22 @@ class CoEntitlementProvisionerTargetsController extends SPTController {
     $this->set('vv_encoding_list', EntitlementProvisionerDBEncodingTypeEnum::type);
     // Return the olist of persistent values
     $this->set('vv_persistent_list', array(true => 'true', false => 'false'));
-
+    $this->set('vv_identifier_type_list', array(
+      IdentifierEnum::Badge => 'Badge',
+      IdentifierEnum::Enterprise => 'Enterprise',
+      IdentifierEnum::ePPN => 'ePPN',
+      IdentifierEnum::ePTID => 'ePTID',
+      IdentifierEnum::ePUID => 'ePUID',
+      IdentifierEnum::Mail => 'Mail',
+      IdentifierEnum::National => 'National',
+      IdentifierEnum::Network => 'Network',
+      IdentifierEnum::OpenID => 'OpenID',
+      IdentifierEnum::ORCID => 'ORCID iD',
+      IdentifierEnum::ProvisioningTarget => 'Provisioning Target',
+      IdentifierEnum::Reference => 'Match Reference',
+      IdentifierEnum::SORID => 'System of Record ID',
+      IdentifierEnum::UID => 'UID'
+    ));
     if($this->request->is('get')
        && $this->action === 'edit' && !empty($this->request->data["CoEntitlementProvisionerTarget"]["password"])) {
         Configure::write('Security.useOpenSsl', true);

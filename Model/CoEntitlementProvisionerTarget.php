@@ -212,6 +212,28 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
       'required' => false,
       'allowEmpty' => true
     ),
+    'identifier_type' => array(
+      'rule' => array(
+        'inList',
+          array(
+                IdentifierEnum::Badge,
+                IdentifierEnum::Enterprise,
+                IdentifierEnum::ePPN,
+                IdentifierEnum::ePTID,
+                IdentifierEnum::ePUID,
+                IdentifierEnum::Mail,
+                IdentifierEnum::National,
+                IdentifierEnum::Network,
+                IdentifierEnum::OpenID,
+                IdentifierEnum::ORCID,
+                IdentifierEnum::ProvisioningTarget,
+                IdentifierEnum::Reference,
+                IdentifierEnum::SORID,
+                IdentifierEnum::UID
+          )
+      ),
+      'required' => true
+    ),
   );
 
   /**
@@ -285,6 +307,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         $co_id = $provisioningData['Co']['id'];
         $co_person_identifier = $provisioningData['CoPerson']['actor_identifier'];
         $co_person_id = $provisioningData['CoPerson']['id'];
+        $ids = Hash::extract($provisioningData['Identifier'], '{n}[type=' . IdentifierEnum::ePUID . '].identifier');
         break;
       case ProvisioningActionEnum::CoPersonExpired:
         break;
@@ -296,6 +319,10 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         $co_id = $provisioningData['CoGroup']['co_id'];
         $co_person_identifier = $provisioningData['CoGroup']['CoPerson']['actor_identifier'];
         $co_person_id = $provisioningData['CoGroup']['CoPerson']['id'];
+        
+        $identifier = ClassRegistry::init('Identifier');
+        $epuid = $identifier->field('identifier', array('co_person_id' => $co_person_id, 'type' => IdentifierEnum::ePUID));
+
         break;
       case ProvisioningActionEnum::CoGroupDeleted: 
         break;
@@ -305,7 +332,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         return true;
         break;
       }
-      $this->log(__METHOD__ . '::Provisioning data' . var_export($provisioningData, true), LOG_DEBUG);           
+      $this->log(__METHOD__ . '::Provisioning data' . var_export($provisioningData['Identifier'], true), LOG_DEBUG);
       
       if(!empty($co_id) && !empty($co_person_identifier) && !empty($co_person_id)) {
         $provisionAction = true;

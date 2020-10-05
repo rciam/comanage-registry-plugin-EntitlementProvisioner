@@ -397,7 +397,7 @@ $token_key = $this->request->params['_Token']['key'];
                       </div>
                   </li>
                   <li>
-                  <div class="field-name">
+                    <div class="field-name">
                       <div class="field-title">
                         <?php print $this->Form->label('entitlement_format',_txt('pl.entitlement_provisioner.entitlement_format')); ?>
                       </div>
@@ -409,7 +409,34 @@ $token_key = $this->request->params['_Token']['key'];
                           : filter_var($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['entitlement_format'],FILTER_SANITIZE_SPECIAL_CHARS);
                           print $this->Form->input('entitlement_format', array('size' => 50,'value' => $value));
                         ?>
+                    </div>
+                  </li>
+                  <li>
+                    <div class="field-name">
+                      <div class="field-title">
+                        <?php print ($e ? $this->Form->label('identifier_type', _txt('pl.entitlement_provisioner.identifier_type')) : _txt('pl.entitlement_provisioner.identifier_type')); ?><span class="required">*</span>
                       </div>
+                    </div>
+                    <div class="field-info">
+                      <?php
+  
+                        $attrs = array();
+                        $attrs['value'] = (isset($co_entitlement_provisioner_targets) ? $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['identifier_type'] : '');
+                        $attrs['empty'] = false;
+
+                        if($e) {
+                          print $this->Form->select('identifier_type',
+                                                    $vv_identifier_type_list,
+                                                    $attrs);
+
+                          if($this->Form->isFieldError('type')) {
+                            print $this->Form->error('type');
+                          }
+                        } else {
+                          print _txt('pl.entitlement_provisioner.identifier_type', null, $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['identifier_type']);
+                        }
+                      ?>
+                    </div>
                   </li>
                 </ul>
             </div>

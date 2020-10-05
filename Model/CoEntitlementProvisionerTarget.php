@@ -307,7 +307,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         $co_id = $provisioningData['Co']['id'];
         $co_person_identifier = $provisioningData['CoPerson']['actor_identifier'];
         $co_person_id = $provisioningData['CoPerson']['id'];
-       // $ids = Hash::extract($provisioningData['Identifier'], '{n}[type=' . IdentifierEnum::ePUID . '].identifier');
+        $co_person_identifier = Hash::extract($provisioningData['Identifier'], '{n}[type=' . $coProvisioningTargetData['CoEntitlementProvisionerTarget']['identifier_type'] . '].identifier')[0];
         break;
       case ProvisioningActionEnum::CoPersonExpired:
         break;
@@ -317,12 +317,10 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         break;
       case ProvisioningActionEnum::CoGroupUpdated:
         $co_id = $provisioningData['CoGroup']['co_id'];
-        $co_person_identifier = $provisioningData['CoGroup']['CoPerson']['actor_identifier'];
+        //$co_person_identifier = $provisioningData['CoGroup']['CoPerson']['actor_identifier'];
         $co_person_id = $provisioningData['CoGroup']['CoPerson']['id'];
-        
         $identifier = ClassRegistry::init('Identifier');
-        $epuid = $identifier->field('identifier', array('co_person_id' => $co_person_id, 'type' => IdentifierEnum::ePUID));
-
+        $co_person_identifier = $identifier->field('identifier', array('co_person_id' => $co_person_id, 'type' => $coProvisioningTargetData['CoEntitlementProvisionerTarget']['identifier_type']));
         break;
       case ProvisioningActionEnum::CoGroupDeleted: 
         break;

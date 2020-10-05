@@ -305,7 +305,8 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         return true;
         break;
       }
-
+      $this->log(__METHOD__ . '::Provisioning data' . var_export($provisioningData, true), LOG_DEBUG);           
+      
       if(!empty($co_id) && !empty($co_person_identifier) && !empty($co_person_id)) {
         $provisionAction = true;
         // Check if its an action we want to provision

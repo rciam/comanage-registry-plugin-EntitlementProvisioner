@@ -17,7 +17,7 @@ class SyncEntitlements{
    * @return void
    */
   public function __construct($config, $coId){
-    $this->state['Attributes'] = array();
+    $this->state['Attributes']['eduPersonEntitlement'] = array();
     $this->config = $config;
     $this->coId = $coId;
     $this->nested_cous_paths = array();
@@ -386,7 +386,9 @@ class SyncEntitlements{
       }
 
       // XXX Remove duplicates
-      $this->state['Attributes']['eduPersonEntitlement'] = array_unique($this->state['Attributes']['eduPersonEntitlement']);
+      if(!empty($this->state['Attributes']['eduPersonEntitlement'])) {
+        $this->state['Attributes']['eduPersonEntitlement'] = array_unique($this->state['Attributes']['eduPersonEntitlement']);
+      }
 
       // XXX Remove all non root non nested cou entitlements from the $this->state['Attributes']['eduPersonEntitlement']
       $re = '/(.*):role=member(.*)/m';

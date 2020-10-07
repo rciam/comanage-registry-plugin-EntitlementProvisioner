@@ -387,11 +387,12 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         else {
           return false;
         }
-        if(empty($co_person_id))
+        if(!empty($co_group_id))
           $connect_id = $co_group_id;
-        else
+        else if(!empty($co_person_id))
           $connect_id = $co_person_id;
-          
+        else
+          return;
         $datasource = $this->connect($connect_id, array(), $coProvisioningTargetData);
         $mitre_id = ClassRegistry::init('MitreIdUsers');
         MitreId::config($mitre_id, $datasource, 'user_info', $coProvisioningTargetData['CoEntitlementProvisionerTarget']['entitlement_format']);

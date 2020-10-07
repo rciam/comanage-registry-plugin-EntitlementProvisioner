@@ -45,6 +45,11 @@ class SyncEntitlements{
     return empty($this->config['vo_group_prefix']) ? urlencode($Co->field('name', array('Co.id' => $this->coId))).':group' : urlencode($this->config['vo_group_prefix']);
   }
 
+  public static function get_vo_group_prefix_static($vo_group_prefix,$coId) {
+    $Co = ClassRegistry::init('Co');
+    return empty($vo_group_prefix) ? urlencode($Co->field('name', array('Co.id' => $coId))).':group' : urlencode($vo_group_prefix);
+  }
+
   /**
    * Construct the plain group entitlements. No nesting supported.
    * @param array $memberships_groups
@@ -192,12 +197,19 @@ class SyncEntitlements{
         $this->state['Attributes']['eduPersonEntitlement'][] = $entitlement;
         // TODO: remove in the near future
         if ($this->config['urn_legacy']) {
-            $this->state['Attributes']['eduPersonEntitlement'][] =
+           /* $this->state['Attributes']['eduPersonEntitlement'][] =
                   $this->config['urn_namespace']          // URN namespace
                   . ':' . $this->config['urn_authority']  // AA FQDN
                   . $group . ':' . $role       // role
                   . "@"                        // VO delimiter
                   . urlencode($vo_name);       // VO
+                  */
+              $this->state['Attributes']['eduPersonEntitlement'][] = 
+                  $this->config['urn_namespace'] . ':' . 'group:' 
+                  . urlencode($vo_name)
+                  . '#'. $this->config['urn_authority']; 
+                  
+
           } // Depricated syntax
       }
     }

@@ -63,6 +63,44 @@ class MitreId
     }
   }
   
+  public static function deleteEntitlementsByGroup($mitreId, $group_name, $urn_namespace, $urn_legacy, $urn_authority, $vo_group_prefix) {
+    if(strpos($mitreId->entitlementFormat,"/") === 0)
+      $regex = explode('/', $mitreId->entitlementFormat)[1];
+    else
+      $regex = $mitreId->entitlementFormat;
+
+
+    
+    $entitlement_regex = '^'.$urn_namespace.':group:'.$vo_group_prefix.':'.urlencode($group_name).'(.*)'; 
+    if($urn_legacy) {
+      $entitlement_regex = '('. $entitlement_regex . ') | (^'.$urn_namespace.':'.$urn_authority.':(.*)@'.urlencode($group_name).')';
+    }
+    $query = 'DELETE FROM user_edu_person_entitlement'
+    . ' WHERE edu_person_entitlement ~  \''. $entitlement_regex .'\' AND edu_person_entitlement ~ \'' .$regex. '\'';
+
+    CakeLog::write('debug', __METHOD__ . ':: delete entitlements by group: ' . $query, LOG_DEBUG);
+
+    $mitreId->query($query);
+  }
+
+  public static function renamentitlementsByGroup($mitreId, $old_group_name, $new_group_name,  $urn_namespace, $urn_legacy, $urn_authority, $vo_group_prefix) {
+    if(strpos($mitreId->entitlementFormat,"/") == 0)
+      $regex = explode('/', $mitreId->entitlementFormat)[1];
+    else
+      $regex = $mitreId->entitlementFormat;
+    
+      $entitlement_regex = '^'.$urn_namespace.':group:'.$vo_group_prefix.':'.urlencode($old_group_name).'(.*)'; 
+    if($urn_legacy) {
+      $entitlement_regex = '('. $entitlement_regex . ') | (^'.$urn_namespace.':'.$urn_authority.':(.*)@'.urlencode($old_group_name).')';
+    }
+      $query = 'UPDATE user_edu_person_entitlement SET edu_person_entitlement = REPLACE(edu_person_entitlement, '. $old_group_name .','. $new_group_name .')'
+      . 'WHERE edu_person_entitlement ~  \''. $entitlement_regex .'\' AND edu_person_entitlement ~ \'' .$regex. '\'';
+     
+      CakeLog::write('debug', __METHOD__ . ':: rename entitlements by group: ' . $query, LOG_DEBUG);
+
+      $mitreId->query($query);
+  }
+
   /**
    * deleteAllEntitlements
    *

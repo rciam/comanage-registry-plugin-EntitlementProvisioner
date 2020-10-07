@@ -346,7 +346,8 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [Co Person Roles] delete role from user with id:' . $co_person_id, LOG_DEBUG);
         }
         else if(strpos(array_keys($_REQUEST)[0],'/co_group_members/delete/')!==FALSE) { //delete co group member
-          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoGroupMember] delete from group, user with id:' . $co_person_id, LOG_DEBUG);
+          if(!empty($co_person_id))
+            $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoGroupMember] delete from group, user with id:' . $co_person_id, LOG_DEBUG);
         }
         else if(strpos(array_keys($_REQUEST)[0],'/co_group_members/add_json')!==FALSE) { //add co group member from rest api
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoGroupMember] REST API CALL: add group to user with id:' . $co_person_id, LOG_DEBUG);
@@ -386,8 +387,12 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         else {
           return false;
         }
-        
-        $datasource = $this->connect($co_person_id, array(), $coProvisioningTargetData);
+        if(empty($co_person_id))
+          $connect_id = $co_group_id;
+        else
+          $connect_id = $co_person_id;
+          
+        $datasource = $this->connect($connect_id, array(), $coProvisioningTargetData);
         $mitre_id = ClassRegistry::init('MitreIdUsers');
         MitreId::config($mitre_id, $datasource, 'user_info', $coProvisioningTargetData['CoEntitlementProvisionerTarget']['entitlement_format']);
         if(!empty($group_name) && !empty($delete_group)) { //group Deleted
@@ -404,7 +409,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
           $person = $mitre_id->find('all', array('conditions'=> array('MitreIdUsers.sub' => $co_person_identifier)));
           if(empty($person)) {
             $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => person id not found in mitre' . $co_person_id . ' and identifier: ' . $co_person_identifier, LOG_DEBUG);            
-            ConnectionManager::drop('connection_' . $co_person_id);
+            ConnectionManager::drop('connection_' . $connect_id);
             return false;
           } 
           //Get User Entitlements From MitreId
@@ -428,7 +433,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
           }
           
         }
-      ConnectionManager::drop('connection_' . $co_person_id);
+      ConnectionManager::drop('connection_' . $connect_id);
     
     
     

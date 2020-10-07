@@ -80,7 +80,7 @@ class MitreId
 
     CakeLog::write('debug', __METHOD__ . ':: delete entitlements by group: ' . $query, LOG_DEBUG);
 
-    $mitreId->query($query);
+   // $mitreId->query($query);
   }
 
   public static function renamentitlementsByGroup($mitreId, $old_group_name, $new_group_name,  $urn_namespace, $urn_legacy, $urn_authority, $vo_group_prefix) {
@@ -98,7 +98,7 @@ class MitreId
      
       CakeLog::write('debug', __METHOD__ . ':: rename entitlements by group: ' . $query, LOG_DEBUG);
 
-      $mitreId->query($query);
+    //  $mitreId->query($query);
   }
 
   /**

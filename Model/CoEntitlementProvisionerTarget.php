@@ -382,7 +382,9 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
           if(!empty($co_person_id))
             $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoGroupMember Action] for user with id:' . $co_person_id, LOG_DEBUG);
         }
-        else if(strpos(array_keys($_REQUEST)[0],'/co_person_roles/')!==FALSE) { //co group member action
+        //co_person_roles_json when remove role 
+        //co_person_roles/250_json when revoke role from admin
+        else if(strpos(array_keys($_REQUEST)[0],'/co_person_roles')!==FALSE) { //co group member action
           if(!empty($co_person_id))
             $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [Co Person Roles Action] for user with id:' . $co_person_id, LOG_DEBUG);
         } 

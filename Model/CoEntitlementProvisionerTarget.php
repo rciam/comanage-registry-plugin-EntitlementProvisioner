@@ -308,6 +308,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         $co_person_identifier = $provisioningData['CoPerson']['actor_identifier'];
         $co_person_id = $provisioningData['CoPerson']['id'];
         $co_person_identifier = Hash::extract($provisioningData['Identifier'], '{n}[type=' . $coProvisioningTargetData['CoEntitlementProvisionerTarget']['identifier_type'] . '].identifier')[0];
+        $this->log(__METHOD__ . 'Request' . var_export($_REQUEST, true), LOG_DEBUG);   
         break;
       case ProvisioningActionEnum::CoPersonExpired:
         break;

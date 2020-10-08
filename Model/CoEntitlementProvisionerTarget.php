@@ -308,7 +308,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         $co_person_identifier = $provisioningData['CoPerson']['actor_identifier'];
         $co_person_id = $provisioningData['CoPerson']['id'];
         $co_person_identifier = Hash::extract($provisioningData['Identifier'], '{n}[type=' . $coProvisioningTargetData['CoEntitlementProvisionerTarget']['identifier_type'] . '].identifier')[0];
-        $this->log(__METHOD__ . 'Request' . var_export($_REQUEST, true), LOG_DEBUG);   
+        
         break;
       case ProvisioningActionEnum::CoPersonExpired:
         break;
@@ -331,7 +331,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         return true;
         break;
       }
-      
+      $this->log(__METHOD__ . 'Request' . var_export($_REQUEST, true), LOG_DEBUG);   
         
         // Check if its an action we want to provision
         if(!empty($_REQUEST['_method']) && $_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'] && $_REQUEST['data']['CoPersonRole']['status'] == 'S')) { //SUSPEND
@@ -381,6 +381,10 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         else if(strpos(array_keys($_REQUEST)[0],'/co_group_members/')!==FALSE) { //co group member action
           if(!empty($co_person_id))
             $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoGroupMember Action] for user with id:' . $co_person_id, LOG_DEBUG);
+        }
+        else if(strpos(array_keys($_REQUEST)[0],'/co_person_roles/')!==FALSE) { //co group member action
+          if(!empty($co_person_id))
+            $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [Co Person Roles Action] for user with id:' . $co_person_id, LOG_DEBUG);
         } 
         else if(!empty($_REQUEST['_method']) && $_REQUEST['_method'] == 'POST' && !empty($_REQUEST['data']['CoPerson']) && $_REQUEST['data']['CoPerson']['confirm'] == '1' && isset($_REQUEST['/co_people/expunge/'. $co_person_id])) { //DELETE
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => Delete User with id:' . $co_person_id, LOG_DEBUG);

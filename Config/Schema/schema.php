@@ -40,6 +40,7 @@ class AppSchema extends CakeSchema {
     'urn_namespace' => array('type' => 'string', 'null' => true, 'default' => null, 'length' => 128),
     'urn_authority' => array('type' => 'string', 'null' => true, 'default' => null, 'length' => 128),
     'urn_legacy' => array('type' => 'string', 'null' => true, 'default' => null, 'length' => 128),
+    'enable_vo_whitelist' => array('type' => 'boolean', 'null' => true, 'default' => null),
     'vo_whitelist' => array('type' => 'text', 'null' => true, 'default' => null, 'length' => 4000),
     'vo_group_prefix' => array('type' => 'string', 'null' => true, 'default' => null, 'length' => 4000),
     'entitlement_format' => array('type' => 'text', 'null' => true, 'default' => null, 'length' => 256),

@@ -21,14 +21,19 @@ After the installation, you have to configure the plugin before using it.
 
 ### EntitlementProvisioner Configuration
 
+  * `enableVoWhitelist`: Optional, if disabled will create all entitlements otherwise will create only for those in voWhitelist field.
   * `voWhitelist`: Optional, an array of strings that contains VOs (COUs) for which the module will generate entitlements.
-  * `communityIdps`: Optional, an array of strings that contains the Entity Ids of trusted communities.it
-  * `urnNamespace`: Required, a string to use as the URN namespace of the generated `eduPersonEntitlement` values containing group membership and role information.
   * `voRoles`: Required, an array of default roles to be used for the composition of the entitlements.
-  * `urnAuthority`: Required, a string to use as the authority of the generated `eduPersonEntitlement` URN values containing group membership and role information.
-  * `registryUrls`: Required, an array of COmanage endpoints representing standard Enrollment Flow types. All the four endpoints are mandatory.
-  * `urnLegacy`: Optional, a boolean value for controlling whether to generate `eduPersonEntitlement` URN values using the legacy syntax. Defaults to `false`.
   * `mergeEntitlements`: A boolean to indicate whether the redundant `eduPersonEntitlement` will be removed from the state. Defaults to `false`.
+  * `urnNamespace`: Required, a string to use as the URN namespace of the generated `eduPersonEntitlement` values containing group membership and role information.
+  * `urnAuthority`: Required, a string to use as the authority of the generated `eduPersonEntitlement` URN values containing group membership and role information.
+  * `urnLegacy`: Optional, a boolean value for controlling whether to generate `eduPersonEntitlement` URN values using the legacy syntax. Defaults to `false`.
+  * `voGroupPrefix`: Optional, defines a prefix for groups if any.
+  * `entitlementFormat`: Required, defines the format of entitlements to be removed from other systems.
+  * `identifierType`: Required, the type of the user identifier.
+
+
+
 
 ## License
 

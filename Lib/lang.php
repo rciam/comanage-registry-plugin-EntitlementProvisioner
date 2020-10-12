@@ -61,5 +61,6 @@ $cm_entitlement_provisioner_texts['en_US'] = array(
   'pl.entitlement_provisioner.entitlement_format.desc' => 'Define a regex for entitlements\' format you want to remove. Leave it blank for removing all old entitlements.',
   'pl.entitlement_provisioner.identifier_type'         => 'Identifier Type',
   'pl.entitlement_provisioner.identifier_type.desc'    => 'Define the User\'s Identifier Type',
-  
+  'pl.entitlement_provisioner.enable.vowhitelist'      => 'Enable Vo Whitelist',
+  'pl.entitlement_provisioner.enable.vowhitelist.desc' => 'Define if Vo Whitelist is enabled'
 );

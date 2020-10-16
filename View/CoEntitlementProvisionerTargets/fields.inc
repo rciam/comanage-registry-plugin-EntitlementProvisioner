@@ -57,16 +57,20 @@ print $this->Form->hidden('co_provisioning_target_id', array('default' => $vv_pt
 // Variables i want accross the view
 $token_key = $this->request->params['_Token']['key'];
 
-// https://dirac.egi.eu/files/diracVOs.json
-// Load my css
-//$this->Html->css('VomsProvisioner.bootstrap.min', array('inline' => false));
-//$this->Html->css('VomsProvisioner.voms-provisioner',  array('inline' => false));
-// Load my Javascript
-//$this->Html->script('VomsProvisioner.bootstrap.min',  array('inline' => false));
-//$this->Html->script('VomsProvisioner.jquery/jquery.base64',  array('inline' => false));
-//$this->Html->script('VomsProvisioner.voms_provisioner_target',  array('inline' => false));
 ?>
-
+<script type ="text/javascript">
+// If enable_vo_whitelist is enabled, show the relevant options
+    function fields_update_gadgets() {
+      if(document.getElementById('CoEntitlementProvisionerTargetEnableVoWhitelist').checked) {
+        $("#CoEntitlementProvisionerTargetVoWhitelist").closest("li").show('fade'); 
+      } else {
+        $("#CoEntitlementProvisionerTargetVoWhitelist").closest("li").hide('fade');
+      }
+    }
+    function js_local_onload() {
+    fields_update_gadgets();
+  }
+</script>
 <div id="<?php print $this->action; ?>_entitlement" class="explorerContainer">
     <div id="entitlementsProvisioner" class="personExplorer">
         <ul>
@@ -255,6 +259,7 @@ $token_key = $this->request->params['_Token']['key'];
             </ul>
             </div>
           </li>
+
            <li id="fields-stats" class="fieldGroup">
             <a href="#tabs-stats" class="fieldGroupName">
                   <em class="material-icons">indeterminate_check_box</em>
@@ -262,7 +267,21 @@ $token_key = $this->request->params['_Token']['key'];
             </a>
             <div id="names-container" class="fields">
               <ul id="tabs-stats" class="fields form-list">
-                <li id="fields-stats" class="field-stack">      
+                        <li>
+            <div class="field-name">
+              <div class="field-title">
+                <?php print _txt('pl.entitlement_provisioner.enable.vowhitelist'); ?>
+              </div>
+              <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.enable.vowhitelist.desc'); ?></div>
+            </div>
+            <div class="field-info checkbox">
+              <?php print ($e
+                          ? $this->Form->input('enable_vo_whitelist', array('onChange' => 'fields_update_gadgets();')) . ' ' .
+                            $this->Form->label('enable_vo_whitelist', _txt('pl.entitlement_provisioner.enable.vowhitelist'))
+                          : filter_var($co_entitlement_provisioner_targets[0]['CoEntitlementProvisionerTarget']['enable_vo_whitelist'],FILTER_SANITIZE_SPECIAL_CHARS)); ?>
+            </div>
+            <ul class="field-children">
+              <li id="fields-stats" class="field-stack">      
                       <div class="field-name">
                         <div class="field-title">
                           <?php print $this->Form->label('vo_whitelist',_txt('pl.entitlement_provisioner.vo_whitelist')); ?>
@@ -277,6 +296,9 @@ $token_key = $this->request->params['_Token']['key'];
                         ?>
                       </div>
                   </li>
+            </ul>
+          </li>
+                
                   <li>
                       <div class="field-name">
                         <div class="field-title">

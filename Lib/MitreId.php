@@ -57,19 +57,18 @@ class MitreId
     if(!empty($deleteEntitlements)) {
       //Delete
       $deleteEntitlementsParam = '(\'' . implode("','", $deleteEntitlements) . '\')';
-    //  $mitreId->query('DELETE FROM user_edu_person_entitlement'
-    //    . ' WHERE user_id=' . $user_id
-    //    . ' AND edu_person_entitlement IN ' . $deleteEntitlementsParam);
+      $mitreId->query('DELETE FROM user_edu_person_entitlement'
+        . ' WHERE user_id=' . $user_id
+        . ' AND edu_person_entitlement IN ' . $deleteEntitlementsParam);
     }
   }
   
+  //not tested yet
   public static function deleteEntitlementsByGroup($mitreId, $group_name, $urn_namespace, $urn_legacy, $urn_authority, $vo_group_prefix) {
     if(strpos($mitreId->entitlementFormat,"/") === 0)
       $regex = explode('/', $mitreId->entitlementFormat)[1];
     else
       $regex = $mitreId->entitlementFormat;
-
-
     
     $entitlement_regex = '^'.$urn_namespace.':group:'.$vo_group_prefix.':'.urlencode($group_name).'(.*)'; 
     if($urn_legacy) {
@@ -80,9 +79,10 @@ class MitreId
 
     CakeLog::write('debug', __METHOD__ . ':: delete entitlements by group: ' . $query, LOG_DEBUG);
 
-   // $mitreId->query($query);
+//    $mitreId->query($query);
   }
 
+  //not tested yet
   public static function renamentitlementsByGroup($mitreId, $old_group_name, $new_group_name,  $urn_namespace, $urn_legacy, $urn_authority, $vo_group_prefix) {
     if(strpos($mitreId->entitlementFormat,"/") == 0)
       $regex = explode('/', $mitreId->entitlementFormat)[1];
@@ -110,8 +110,8 @@ class MitreId
    */
   public static function deleteAllEntitlements($mitreId, $user_id) {
     CakeLog::write('debug', __METHOD__ . ':: delete all entitlements from mitreid', LOG_DEBUG);
-  //  $mitreId->query('DELETE FROM user_edu_person_entitlement'
-  //  . ' WHERE user_id=' . $user_id);
+    $mitreId->query('DELETE FROM user_edu_person_entitlement'
+    . ' WHERE user_id=' . $user_id);
   }
   
   /**
@@ -132,7 +132,7 @@ class MitreId
       foreach ($insertEntitlements as $entitlement) {
         $insertEntitlementsParam .= '(' . $user_id . ',\'' . $entitlement . '\'),';
       }
-     // $mitreId->query('INSERT INTO user_edu_person_entitlement (user_id, edu_person_entitlement) VALUES ' . substr($insertEntitlementsParam, 0, -1));
+      $mitreId->query('INSERT INTO user_edu_person_entitlement (user_id, edu_person_entitlement) VALUES ' . substr($insertEntitlementsParam, 0, -1));
     }
   }
 }

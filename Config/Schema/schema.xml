@@ -47,6 +47,7 @@
     <field name="urn_namespace" type="C" size="128" />
     <field name="urn_authority" type="C" size="128" />
     <field name="urn_legacy" type="C" size="128" />
+    <field name="enable_vo_whitelist" type="L" />
     <field name="vo_whitelist" type="X" size="4000" />
     <field name="vo_group_prefix" type="C" size="128" />
     <field name="entitlement_format" type="C" size="256" />

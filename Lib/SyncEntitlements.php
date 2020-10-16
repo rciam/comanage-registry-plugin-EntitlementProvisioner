@@ -26,11 +26,12 @@ class SyncEntitlements{
   /**
    * Get all the memberships and affiliations in the specified CO for the specified user. The COUs while have a cou_id
    * The plain Groups will have cou_id=null
+   * @param integer $co_id The CO Id person wants to get memberships
    * @param integer $co_person_id The CO Person that we will retrieve the memberships for
    * @return array Array contents: [group_name, cou_id, affiliation, title, member, owner]
    */
-  public function getMemberships($co_person_id){
-    $membership_query = QueryConstructor::getMembershipQuery($this->coId, $co_person_id);
+  public static function getMemberships($co_id, $co_person_id){
+    $membership_query = QueryConstructor::getMembershipQuery($co_id, $co_person_id);
     $CoGroup = ClassRegistry::init('CoGroup');
     return $CoGroup->query($membership_query);
   }
@@ -40,12 +41,8 @@ class SyncEntitlements{
    *
    * @return string
    */
-  private function get_vo_group_prefix(){
-    $Co = ClassRegistry::init('Co');
-    return empty($this->config['vo_group_prefix']) ? urlencode($Co->field('name', array('Co.id' => $this->coId))).':group' : urlencode($this->config['vo_group_prefix']);
-  }
-
-  public static function get_vo_group_prefix_static($vo_group_prefix,$coId) {
+  
+  public static function get_vo_group_prefix($vo_group_prefix, $coId){
     $Co = ClassRegistry::init('Co');
     return empty($vo_group_prefix) ? urlencode($Co->field('name', array('Co.id' => $coId))).':group' : urlencode($vo_group_prefix);
   }
@@ -55,24 +52,22 @@ class SyncEntitlements{
    * @param array $memberships_groups
    */
   private function groupEntitlementAssemble($memberships_groups){
+   
+
     if(empty($memberships_groups)) {
       return;
     }
     foreach($memberships_groups as $group) {
+      CakeLog::write('debug', __METHOD__ . "::groupEntitlementAssemble => " . var_export($group, true), LOG_DEBUG);
       $roles = array();
-      // especially for comanage
-      $group = $group[0];
       if($group['member'] === true) {
         $roles[] = "member";
       }
       if($group['owner'] === true) {
         $roles[] = "owner";
       }
-      if(!array_key_exists('eduPersonEntitlement', $this->state['Attributes'])) {
-        $this->state['Attributes']['eduPersonEntitlement'] = array();
-      }
       // todo: Move this to configuration
-      $voGroupPrefix = $this->get_vo_group_prefix();
+      $voGroupPrefix = SyncEntitlements::get_vo_group_prefix($this->config['vo_group_prefix'], $this->coId);
       foreach($roles as $role) {
         $this->state['Attributes']['eduPersonEntitlement'][] =
           $this->config['urn_namespace']          // URN namespace
@@ -102,16 +97,18 @@ class SyncEntitlements{
   private function getCouTreeStructure($cous) {
     
     foreach($cous as $cou) {
-      $cou = $cou[0];
+      
       if(empty($cou['group_name']) || empty($cou['cou_id'])) {
         continue;
       }
 
+      $nested_cous_paths = array(); //local array
       $recursive_query = QueryConstructor::getRecursiveQuery($cou['cou_id']);
       $CoGroup = ClassRegistry::init('CoGroup');
       $result = $CoGroup->query($recursive_query);
 
       foreach($result as $row) {
+         // especially for comanage
         $row = $row[0];
         /// If ':' does exist
         if(strpos($row['path'], ':') !== false) {
@@ -155,7 +152,6 @@ class SyncEntitlements{
      /**
      * Add eduPersonEntitlements in the State(no filtering happens here.)
      * @param array $personRoles
-     * @param array &$state
      * @param string $vo_name
      * @param string $group_name
      * @param array $memberEntitlements
@@ -167,15 +163,12 @@ class SyncEntitlements{
     {
       foreach ($personRoles as $key => $role) {
         // We need this to filter the cou_id or any other irrelevant information
-        if (is_string($key) && $key === 'cou_id') {
-          continue;
-        }
         // Do not create entitlements for the admins group here.
-        if (strpos($vo_name, ':admins') !== false) {
+        if ((!is_array($key) && is_string($key) && $key === 'cou_id') || (strpos($vo_name, ':admins') !== false)) {
           continue;
         }
         if (!empty($role) && is_array($role) && count($role) > 0) {
-          $this->couEntitlementAssemble($role, $this->state, $vo_name, $key, $personRoles['cou_id']);
+          $this->couEntitlementAssemble($role, $vo_name, $key, $personRoles['cou_id']);
           continue;
         }
         $group = !empty($group_name) ? ":" . $group_name : "";
@@ -210,7 +203,7 @@ class SyncEntitlements{
                   . '#'. $this->config['urn_authority']; 
                   
 
-          } // Depricated syntax
+          } // Deprecated syntax
       }
     }
 
@@ -231,6 +224,44 @@ class SyncEntitlements{
     }
 
     /**
+     * @param array $orphan_memberships  Groups memberships that are not plain Groups. They are attached to COUs, and have no related affiliation
+     * @param array $cou_tree_structure  Each COU with the related root, path, etc. if part of a bigger Tree hierarchy
+     */
+    private function constructOrphanCouAdminEntitlements($orphan_memberships, $cou_tree_structure) {
+      // XXX Add all orphan admins COU groups in the state
+      foreach ($orphan_memberships as $membership) {
+          CakeLog::write('debug', __METHOD__ . "::membeship: orphan_memberships => " . var_export($membership, true), LOG_DEBUG);
+          if ($membership['member'] || $membership['owner']) {
+              $membership_roles = [];
+              if ($membership['member']) {
+                  $membership_roles[] = 'member';
+              }
+              if ($membership['owner']) {
+                  $membership_roles[] = 'owner';
+              }
+              $vo_name = $membership['group_name'];
+              if (array_key_exists($membership['cou_id'], $cou_tree_structure)) {
+                  $vo_name = $cou_tree_structure[$membership['cou_id']]['path'] . ':admins';
+              } elseif (strpos($vo_name, ':admins') !== false) {
+                $vo_name = str_replace(':admins', '', $vo_name);
+                $vo_name = urlencode($vo_name) . ':admins';
+              } else {
+                $vo_name = urlencode($vo_name);
+              }
+              foreach ($membership_roles as $role) {
+                  $entitlement =
+                      $this->config['urn_namespace']                 // URN namespace
+                      . ":group:"                         // group literal
+                      . $vo_name                          // VO
+                      . ":role=" . $role                  // role
+                      . "#" . $this->config['urn_authority'];        // AA FQDN
+                  $this->state['Attributes']['eduPersonEntitlement'][] = $entitlement;
+              }
+          }
+      }
+  }
+
+    /**
      * @param array $orphan_memberships
      * @param array $coGroupMemberships
      */
@@ -241,7 +272,11 @@ class SyncEntitlements{
       CakeLog::write('debug', __METHOD__ . "::mergeEntitlements: orphan_memberships => " . var_export($orphan_memberships, true), LOG_DEBUG);
 
       if (empty($this->nested_cous_paths)) {
-        return;
+          // XXX Add remaining orphans and exit
+          $this->constructOrphanCouAdminEntitlements($orphan_memberships, $this->nested_cous_paths);
+          // XXX Remove duplicates
+          $this->state['Attributes']['eduPersonEntitlement'] = array_unique($this->state['Attributes']['eduPersonEntitlement']);
+          return;
       }
 
       // Retrieve only the entitlements that need handling.
@@ -344,7 +379,7 @@ class SyncEntitlements{
       foreach ($this->nested_cous_paths as $cou_id => $sub_tree) {
           // XXX Split the full path and encode each part.
           $parent_vo = array_values($sub_tree['path_full_list'])[0];
-          if (!in_array($parent_vo, $voWhitelist, true)) {
+          if ($this->config['enable_vo_whitelist'] && !in_array($parent_vo, $voWhitelist, true)) {
               continue;
           }
           // XXX Also exclude the ones that are admin groups
@@ -369,33 +404,9 @@ class SyncEntitlements{
           }
       }
 
-      // XXX Add all orphan admins COU groups in the state
-      foreach ($orphan_memberships as $membership) {
-          $membership = $membership[0];
-          CakeLog::write('debug', __METHOD__ . "::membeship: membeship => " . var_export($membership, true), LOG_DEBUG);
-          if ($membership['member'] || $membership['owner']) {
-              $membership_roles = [];
-              if ($membership['member']) {
-                  $membership_roles[] = 'member';
-              }
-              if ($membership['owner']) {
-                  $membership_roles[] = 'owner';
-              }
-              $vo_name = $membership['group_name'];
-              if (array_key_exists($membership['cou_id'], $this->nested_cous_paths)) {
-                  $vo_name = $this->nested_cous_paths[$membership['cou_id']]['path'] . ':admins';
-              }
-              foreach ($membership_roles as $role) {
-                  $entitlement =
-                      $this->config['urn_namespace']                 // URN namespace
-                      . ":group:"                         // group literal
-                      . $vo_name                          // VO
-                      . ":role=" . $role                  // role
-                      . "#" . $this->config['urn_authority'];        // AA FQDN
-                  $this->state['Attributes']['eduPersonEntitlement'][] = $entitlement;
-              }
-          }
-      }
+      // XXX Add all remaining orphans
+      $this->constructOrphanCouAdminEntitlements($orphan_memberships, $this->nested_cous_paths);
+
 
       // XXX Remove duplicates
       if(!empty($this->state['Attributes']['eduPersonEntitlement'])) {
@@ -427,36 +438,20 @@ class SyncEntitlements{
    * @return array 
    */
   public function getEntitlements($coPersonId) {
+    if($this->config['enable_vo_whitelist']===TRUE && empty($this->config['vo_whitelist']))
+      return array();
     // XXX Get all the memberships from the the CO for the user
-    $coGroupMemberships = SyncEntitlements::getMemberships($coPersonId);
+    $coGroupMemberships = SyncEntitlements::getMemberships($this->coId, $coPersonId);
     // XXX if this is empty return
     if(empty($coGroupMemberships)) {
-      if(!array_key_exists('eduPersonEntitlement', $this->state['Attributes'])) {
-        $this->state['Attributes']['eduPersonEntitlement'] = array();
-      }
       return;
     }
     // XXX Extract the group memberships
-    $group_memberships = array_filter(
-      $coGroupMemberships,
-      static function ($value) {
-        if(is_null($value[0]['cou_id'])) {
-          return $value;
-        }
-      }
-    );
+    $group_memberships = Hash::extract($coGroupMemberships, '{n}.{n}[cou_id=/^$/]');
 
     CakeLog::write('debug', __METHOD__ . "::group_memberships => " . var_export($group_memberships, true), LOG_DEBUG);
-    
-    
-    $cou_memberships = array_filter(
-      $coGroupMemberships,
-      static function($value) {
-        if(!is_null($value[0]['cou_id'])) {
-          return $value;
-        }
-      }
-    );
+
+    $cou_memberships = Hash::extract($coGroupMemberships, '{n}.{n}[cou_id>0]');
 
     CakeLog::write('debug', __METHOD__ . "::cou_memberships => " . var_export($cou_memberships, true), LOG_DEBUG);
 
@@ -472,32 +467,33 @@ class SyncEntitlements{
     $voWhitelist = explode(',', $this->config['vo_whitelist']);
     // Iterate over the COUs and construct the entitlements
     foreach ($cou_memberships as $idx => $cou) {
-      $cou = $cou[0];
         if (empty($cou['group_name'])) {
             continue;
         }
       
       $vo_roles = array();
       
-      if (!in_array($cou['group_name'], $voWhitelist, true)) {
+      if($this->config['enable_vo_whitelist'] && !in_array($cou['group_name'], $voWhitelist, true)) {
           // XXX Check if there is a root COU that is in the voWhitelist
           // XXX :admins this is not part of the voWhiteList that's why i do not get forward
           $parent_cou_name = $this->getCouRootParent($cou['group_name'], $this->nested_cous_paths);
-          if (!in_array($parent_cou_name, $voWhitelist, true)
+          if(!in_array($parent_cou_name, $voWhitelist, true)
               && strpos($cou['group_name'], ':admins') === false) {
               // XXX Remove a child COU that has no parent in the voWhitelist OR
               // XXX Remove if it does not represent an admins group AND
               unset($cou_memberships[$idx]);
               continue;
           }
-          if (!in_array($parent_cou_name, $voWhitelist, true)
+          if(!in_array($parent_cou_name, $voWhitelist, true)
               && !strpos($cou['group_name'], ':admins') === false){
               continue;
           }
+      }      
+      // XXX handle orphan COU admin memberships if no voWhiteList
+      if (!$this->config['enable_vo_whitelist']
+      && !strpos($cou['group_name'], ':admins') === false) {
+        continue;
       }
-      if (!array_key_exists('eduPersonEntitlement', $this->state['Attributes'])) {
-        $this->state['Attributes']['eduPersonEntitlement'] = array();
-    }
 
     $voName = $cou['group_name'];
     
@@ -541,8 +537,8 @@ class SyncEntitlements{
             }
         )
     );
-
-    CakeLog::write('debug', __METHOD__ . "::cou_admins_group => " . var_export($cou_admins_group, true), LOG_DEBUG);
+    if(!empty($cou_admins_group))
+      CakeLog::write('debug', __METHOD__ . "::cou_admins_group => " .  var_export($cou_admins_group, true), LOG_DEBUG);
 
     // Handle as a role the membership and ownership of admins group
     if (!empty($cou_admins_group[0]['member']) && filter_var($cou_admins_group[0]['member'], FILTER_VALIDATE_BOOLEAN)) {
@@ -570,6 +566,5 @@ class SyncEntitlements{
       }
 
     return $this->state['Attributes']['eduPersonEntitlement'];
-    //return $group_memberships;
   }
 }

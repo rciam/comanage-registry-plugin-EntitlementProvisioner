@@ -111,7 +111,7 @@ class MitreId
    * @return void
    */
   public static function deleteAllEntitlements($mitreId, $user_id) {
-    CakeLog::write('debug', __METHOD__ . ':: delete all entitlements from mitreid', LOG_DEBUG);
+    CakeLog::write('debug', __METHOD__ . ':: delete all entitlements from mitreid for user :' . $user_id, LOG_DEBUG);
     $mitreId->query('DELETE FROM user_edu_person_entitlement'
     . ' WHERE user_id=' . $user_id);
   }

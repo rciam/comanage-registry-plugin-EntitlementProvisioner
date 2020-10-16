@@ -463,11 +463,11 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         } 
         //Get User Entitlements From MitreId
         $mitre_id_entitlements = ClassRegistry::init('MitreIdEntitlements');
+        MitreId::config($mitre_id_entitlements, $datasource, 'user_edu_person_entitlement', $coProvisioningTargetData['CoEntitlementProvisionerTarget']['entitlement_format']);
         if(!empty($data['user_deleted'])) {
           MitreId::deleteAllEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id']);  
         }
-        else {
-          MitreId::config($mitre_id_entitlements, $datasource, 'user_edu_person_entitlement', $coProvisioningTargetData['CoEntitlementProvisionerTarget']['entitlement_format']);
+        else {        
           $current_entitlements = MitreId::getCurrentEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id']);
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => current_entitlements from MitreId' . var_export($current_entitlements, true), LOG_DEBUG);           
           //Get New Entitlements From Comanage

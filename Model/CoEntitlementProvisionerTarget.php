@@ -281,8 +281,16 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
     $datasource = ConnectionManager::create('connection_' . $coPersonId, $dbconfig);
     return $datasource;
   }
-
-  public function checkRequest($op, $data) {
+  
+  /**
+   * checkRequest
+   *
+   * @param  mixed $op
+   * @param  mixed $provisioningData
+   * @param  mixed $data
+   * @return void
+   */
+  public function checkRequest($op, $provisioningData,  $data) {
      
       // Check if its a request we want to provision
       if(!empty($_REQUEST['_method']) && $_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'] && $_REQUEST['data']['CoPersonRole']['status'] == 'S') && !empty($data['co_person_id'])) { //SUSPEND
@@ -302,6 +310,14 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
       }
       else if(strpos(array_keys($_REQUEST)[0],'/co_group_members/add_json')!==FALSE && !empty($data['co_person_id'])) { //add co group member from rest api
         $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoGroupMember] REST API CALL: add group to user with id:' . $data['co_person_id'], LOG_DEBUG);
+      }
+      else if(strpos(array_keys($_REQUEST)[0],'/co_groups/add')!==FALSE && !empty($data['co_person_id'])) { //add group
+       /* $data['co_person_identifier'] = $provisioningData['CoPerson']['actor_identifier'];
+        $CoPerson = ClassRegistry::init('CoPerson');
+        $data['co_person_id'] = $CoPerson->field('id', array('actor_identifier' => $data['co_person_identifier']));
+        $data['co_group_id'] = $provisioningData['CoGroup']['id'];
+        $data['co_id'] = $provisioningData['CoGroup']['co_id'];*/
+        $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoGroup] add group membership to user id:' . $data['co_person_id'], LOG_DEBUG);
       }
       else if(strpos(array_keys($_REQUEST)[0],'/co_groups/delete')!==FALSE) { //delete co group 
         $data['co_group_id'] = explode('/', array_keys($_REQUEST)[0])[3];
@@ -362,7 +378,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
     $this->log(__METHOD__ . "::@", LOG_DEBUG);
     $this->log(__METHOD__ . "::action => " . $op, LOG_DEBUG);
     $data = NULL;
-    
+
     switch ($op) {
       case ProvisioningActionEnum::CoPersonAdded:
         break;
@@ -370,6 +386,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         $data['co_id'] = $provisioningData['Co']['id'];
         $data['co_person_identifier'] = $provisioningData['CoPerson']['actor_identifier'];
         $data['co_person_id'] = $provisioningData['CoPerson']['id'];
+        $data['co_person_identifier'] = Hash::extract($provisioningData['Identifier'], '{n}[type=' . $coProvisioningTargetData['CoEntitlementProvisionerTarget']['identifier_type'] . '].identifier')[0];
         break;
       case ProvisioningActionEnum::CoPersonUpdated:
         $data['co_id'] = $provisioningData['Co']['id'];
@@ -400,16 +417,20 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
       }
       $this->log(__METHOD__ . 'Request' . var_export($_REQUEST, true), LOG_DEBUG);   
        
-      $data = $this->checkRequest($op, $data);
+      $data = $this->checkRequest($op, $provisioningData, $data);
 
       if(empty($data))   
         return; 
 
+      // Construct connect_id
       if(!empty($data['co_group_id'])) {
         $connect_id = $data['co_group_id'];
       }
       else if(!empty($data['co_person_id'])) {
         $connect_id = $data['co_person_id'];
+      }
+      else if(!empty($data['cou_id'])) {
+        $connect_id = $data['cou_id'];
       }
       else {
         return;

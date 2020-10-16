@@ -70,7 +70,7 @@ class MitreId
     else
       $regex = $mitreId->entitlementFormat;
     
-    $entitlement_regex = '^'.$urn_namespace.':group:'.$vo_group_prefix.':'.urlencode($group_name).'(.*)'; 
+    $entitlement_regex = '^'.$urn_namespace.':group:'.$vo_group_prefix.':'. str_replace('+','\+', urlencode($group_name)) .'(.*)'; 
     if($urn_legacy) {
       $entitlement_regex = '('. $entitlement_regex . ') | (^'.$urn_namespace.':'.$urn_authority.':(.*)@'.urlencode($group_name).')';
     }
@@ -84,10 +84,12 @@ class MitreId
 
   //not tested yet
   public static function renamentitlementsByGroup($mitreId, $old_group_name, $new_group_name,  $urn_namespace, $urn_legacy, $urn_authority, $vo_group_prefix) {
-    if(strpos($mitreId->entitlementFormat,"/") == 0)
+    if(strpos($mitreId->entitlementFormat,"/") == 0) {
       $regex = explode('/', $mitreId->entitlementFormat)[1];
-    else
+    }
+    else {
       $regex = $mitreId->entitlementFormat;
+    }
     
       $entitlement_regex = '^'.$urn_namespace.':group:'.$vo_group_prefix.':'.urlencode($old_group_name).'(.*)'; 
     if($urn_legacy) {

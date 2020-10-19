@@ -1,7 +1,7 @@
 <?php
 
 
-class EntitlementProvisionerDBDriverTypeEnum
+class MitreIdProvisionerDBDriverTypeEnum
 {
     const Mysql     = 'MY';
     const Postgres  = 'PG';
@@ -11,7 +11,7 @@ class EntitlementProvisionerDBDriverTypeEnum
     );
 }
 
-class EntitlementProvisionerDBPortsEnum
+class MitreIdProvisionerDBPortsEnum
 {
   const Mysql     = '3306';
   const Postgres  = '5432';
@@ -21,7 +21,7 @@ class EntitlementProvisionerDBPortsEnum
   );
 }
 
-class EntitlementProvisionerDBEncodingTypeEnum
+class MitreIdProvisionerDBEncodingTypeEnum
 {
     const utf_8      = 'utf8';
     const iso_8859_7 = 'iso_8859_7'; // Latin/ Greek
@@ -40,7 +40,7 @@ class EntitlementProvisionerDBEncodingTypeEnum
     );
 }
 
-class EntitlementProvisionerDateTruncEnum
+class MitreIdProvisionerDateTruncEnum
 {
     const daily     = 'day';
     const weekly    = 'week';
@@ -55,7 +55,7 @@ class EntitlementProvisionerDateTruncEnum
     );
 }
 
-class EntitlementProvisionerDateEnum
+class MitreIdProvisionerDateEnum
 {
     const daily     = 'daily';
     const weekly    = 'weekly';
@@ -69,7 +69,7 @@ class EntitlementProvisionerDateEnum
     );
 }
 
-class EntitlementProvisionerIdentifierEnum
+class MitreIdProvisionerIdentifierEnum
 {
   const Badge              = 'badge';
   const Enterprise         = 'enterprise';
@@ -87,20 +87,20 @@ class EntitlementProvisionerIdentifierEnum
   const UID                = 'uid';
 
   const type = array(
-    EntitlementProvisionerIdentifierEnum::Badge => 'badge',
-    EntitlementProvisionerIdentifierEnum::Enterprise => 'enterprise',
-    EntitlementProvisionerIdentifierEnum::ePPN => 'eppn',
-    EntitlementProvisionerIdentifierEnum::ePTID => 'eptid',
-    EntitlementProvisionerIdentifierEnum::ePUID => 'epuid',
-    EntitlementProvisionerIdentifierEnum::Mail => 'mail',
-    EntitlementProvisionerIdentifierEnum::National => 'national',
-    EntitlementProvisionerIdentifierEnum::Network => 'network',
-    EntitlementProvisionerIdentifierEnum::OpenID => 'openid',
-    EntitlementProvisionerIdentifierEnum::ORCID => ' orcid',
-    EntitlementProvisionerIdentifierEnum::ProvisioningTarget => 'provisioningtarget',
-    EntitlementProvisionerIdentifierEnum::Reference => 'reference',
-    EntitlementProvisionerIdentifierEnum::SORID => 'sorid',
-    EntitlementProvisionerIdentifierEnum::UID => 'uid'
+    MitreIdProvisionerIdentifierEnum::Badge => 'badge',
+    MitreIdProvisionerIdentifierEnum::Enterprise => 'enterprise',
+    MitreIdProvisionerIdentifierEnum::ePPN => 'eppn',
+    MitreIdProvisionerIdentifierEnum::ePTID => 'eptid',
+    MitreIdProvisionerIdentifierEnum::ePUID => 'epuid',
+    MitreIdProvisionerIdentifierEnum::Mail => 'mail',
+    MitreIdProvisionerIdentifierEnum::National => 'national',
+    MitreIdProvisionerIdentifierEnum::Network => 'network',
+    MitreIdProvisionerIdentifierEnum::OpenID => 'openid',
+    MitreIdProvisionerIdentifierEnum::ORCID => ' orcid',
+    MitreIdProvisionerIdentifierEnum::ProvisioningTarget => 'provisioningtarget',
+    MitreIdProvisionerIdentifierEnum::Reference => 'reference',
+    MitreIdProvisionerIdentifierEnum::SORID => 'sorid',
+    MitreIdProvisionerIdentifierEnum::UID => 'uid'
   );
 
 }

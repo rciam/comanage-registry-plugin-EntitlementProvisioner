@@ -25,7 +25,7 @@
  * @license       Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
  */
 
-class EntitlementProvisioner extends AppModel {
+class MitreIdProvisioner extends AppModel {
   // Required by COmanage Plugins
   public $cmPluginType = "provisioner";
 

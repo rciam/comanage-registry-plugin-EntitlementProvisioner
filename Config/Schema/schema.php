@@ -14,17 +14,17 @@ class AppSchema extends CakeSchema {
   {
     if (isset($event['create'])) {
       switch ($event['create']) {
-        case 'co_entitlement_provisioner_targets':
-          $EntitlementProvisioner = ClassRegistry::init('EntitlementProvisioner.CoEntitlementProvisionerTarget');
-          $EntitlementProvisioner->useDbConfig = $this->connection;
+        case 'co_mitre_id_provisioner_targets':
+          $MitreIdProvisioner = ClassRegistry::init('MitreIdProvisioner.CoMitreIdProvisionerTarget');
+          $MitreIdProvisioner->useDbConfig = $this->connection;
           // Add the constraints or any other initializations
-          $EntitlementProvisioner->query("ALTER TABLE ONLY public.cm_co_entitlement_provisioner_targets ADD CONSTRAINT cm_co_entitlement_provisioner_targets_co_provisioning_target_id_fkey FOREIGN KEY (co_provisioning_target_id) REFERENCES public.cm_co_provisioning_targets(id)");
+          $MitreIdProvisioner->query("ALTER TABLE ONLY public.cm_co_mitre_id_provisioner_targets ADD CONSTRAINT cm_co_mitre_id_provisioner_targets_co_provisioning_target_id_fkey FOREIGN KEY (co_provisioning_target_id) REFERENCES public.cm_co_provisioning_targets(id)");
           break;
       }
     }
   }
 
-  public $co_entitlement_provisioner_targets = array(
+  public $co_mitre_id_provisioner_targets = array(
     'id' => array('type' => 'integer', 'null' => false, 'default' => null, 'length' => 11, 'key' => 'primary'),
     'co_provisioning_target_id' => array('type' => 'integer', 'null' => false, 'length' => 10),
     'type' => array('type' => 'string', 'null' => true, 'default' => null, 'length' => 2),

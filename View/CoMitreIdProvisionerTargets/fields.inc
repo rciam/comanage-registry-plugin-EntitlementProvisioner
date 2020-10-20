@@ -1,6 +1,6 @@
 <!--
 /**
- * COmanage Registry CO Entitlement Provisioning Target Fields
+ * COmanage Registry CO MitreId Provisioning Target Fields
  *
  * Portions licensed to the University Corporation for Advanced Internet
  * Development, Inc. ("UCAID") under one or more contributor license agreements.
@@ -48,7 +48,7 @@ $args['co'] = $cur_co['Co']['id'];
 $this->Html->addCrumb(_txt('ct.co_provisioning_targets.pl'), $args);
 
 // Current Crumb
-$crumbTxt = _txt('op.' . $this->action . '-a', array(_txt('ct.co_entitlement_provisioner_targets.1')));
+$crumbTxt = _txt('op.' . $this->action . '-a', array(_txt('ct.co_mitre_id_provisioner_targets.1')));
 $this->Html->addCrumb($crumbTxt);
 
 print $this->Form->hidden('co_id', array('default' => $cur_co['Co']['id'])) . "\n";
@@ -61,25 +61,25 @@ $token_key = $this->request->params['_Token']['key'];
 <script type ="text/javascript">
 // If enable_vo_whitelist is enabled, show the relevant options
     function fields_update_gadgets() {
-      if(document.getElementById('CoEntitlementProvisionerTargetEnableVoWhitelist').checked) {
-        $("#CoEntitlementProvisionerTargetVoWhitelist").closest("li").show('fade'); 
+      if(document.getElementById('CoMitreIdProvisionerTargetEnableVoWhitelist').checked) {
+        $("#CoMitreIdProvisionerTargetVoWhitelist").closest("li").show('fade');
       } else {
-        $("#CoEntitlementProvisionerTargetVoWhitelist").closest("li").hide('fade');
+        $("#CoMitreIdProvisionerTargetVoWhitelist").closest("li").hide('fade');
       }
     }
     function js_local_onload() {
     fields_update_gadgets();
   }
 </script>
-<div id="<?php print $this->action; ?>_entitlement" class="explorerContainer">
-    <div id="entitlementsProvisioner" class="personExplorer">
+<div id="<?php print $this->action; ?>_mitre_id" class="explorerContainer">
+    <div id="mitreIdProvisioner" class="personExplorer">
         <ul>
-          <!-- Entitlement Config -->
+          <!-- Database Config -->
           <li id="fields-database" class="fieldGroup">
             <a href="#tabs-database" class="fieldGroupName">
               <em class="material-icons">indeterminate_check_box</em>
               <?php
-                print _txt('pl.entitlement_provisioner.db_settings');
+                print _txt('pl.mitre_id_provisioner.db_settings');
               ?>
             </a>
             <div id="names-container" class="fields">
@@ -87,14 +87,14 @@ $token_key = $this->request->params['_Token']['key'];
               <li>
                 <div class="field-name">
                   <div class="field-title">
-                    <?php print $this->Form->label('hostname',_txt('pl.entitlement_provisioner.hostname')); ?>
+                    <?php print $this->Form->label('hostname',_txt('pl.mitre_id_provisioner.hostname')); ?>
                     <span class="required">*</span>
                   </div>
                 </div>
                 <div class="field-info">
                   <?php
-                  $value = empty($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['hostname']) ? ''
-                          : filter_var($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['hostname'],FILTER_SANITIZE_SPECIAL_CHARS);
+                  $value = empty($co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['hostname']) ? ''
+                          : filter_var($co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['hostname'],FILTER_SANITIZE_SPECIAL_CHARS);
                   print $this->Form->input('hostname', array('size' => 50,'value' => $value));
                   ?>
                 </div>
@@ -107,8 +107,8 @@ $token_key = $this->request->params['_Token']['key'];
                   </div>
                 <div class="field-info">
                   <?php
-                    $value = empty($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['port']) ? ''
-                             : filter_var($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['port'],FILTER_SANITIZE_SPECIAL_CHARS);
+                    $value = empty($co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['port']) ? ''
+                             : filter_var($co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['port'],FILTER_SANITIZE_SPECIAL_CHARS);
                     $options = array(
                       'value' => $value,
                       'type'  => 'number',
@@ -128,7 +128,7 @@ $token_key = $this->request->params['_Token']['key'];
                   <?php
                     global $cm_lang, $cm_texts;
                     $attrs = array();
-                    $attrs['value'] = (isset($co_entitlement_provisioner_targets) ? $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['type'] : '');
+                    $attrs['value'] = (isset($co_mitre_id_provisioner_targets) ? $co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['type'] : '');
                     $attrs['empty'] = false;
 
                     if($e) {
@@ -140,7 +140,7 @@ $token_key = $this->request->params['_Token']['key'];
                         print $this->Form->error('type');
                       }
                     } else {
-                      print _txt('en.server.sql', null, $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['type']);
+                      print _txt('en.server.sql', null, $co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['type']);
                     }
                   ?>
                 </div>
@@ -154,8 +154,8 @@ $token_key = $this->request->params['_Token']['key'];
                 </div>
                 <div class="field-info">
                   <?php
-                    $value = empty($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['username']) ? ''
-                    : filter_var($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['username'],FILTER_SANITIZE_SPECIAL_CHARS);
+                    $value = empty($co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['username']) ? ''
+                    : filter_var($co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['username'],FILTER_SANITIZE_SPECIAL_CHARS);
                     print $this->Form->input('username', array('size' => 50,'value' => $value));
                   ?>
                 </div>
@@ -178,14 +178,14 @@ $token_key = $this->request->params['_Token']['key'];
               <li>
                 <div class="field-name">
                   <div class="field-title">
-                    <?php print $this->Form->label('databas',_txt('pl.entitlement_provisioner.database')); ?>
+                    <?php print $this->Form->label('databas',_txt('pl.mitre_id_provisioner.database')); ?>
                     <span class="required">*</span>
                   </div>
                 </div>
                 <div class="field-info">
                   <?php
-                    $value = empty($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['databas']) ? ''
-                    : filter_var($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['databas'],FILTER_SANITIZE_SPECIAL_CHARS);
+                    $value = empty($co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['databas']) ? ''
+                    : filter_var($co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['databas'],FILTER_SANITIZE_SPECIAL_CHARS);
                     print $this->Form->input('databas', array('size' => 50,'value' => $value));
                   ?>
                 </div>
@@ -200,7 +200,7 @@ $token_key = $this->request->params['_Token']['key'];
                 <div class="field-info">
                   <?php
                     $attrs = array();
-                    $attrs['value'] = (isset($co_entitlement_provisioner_targets) ? $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['persistent'] : '');
+                    $attrs['value'] = (isset($co_mitre_id_provisioner_targets) ? $co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['persistent'] : '');
                     $attrs['empty'] = false;
 
                     if($e) {
@@ -212,7 +212,7 @@ $token_key = $this->request->params['_Token']['key'];
                         print $this->Form->error('persistent');
                       }
                     } else {
-                      print _txt('en.server.sql', null, $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['persistent']);
+                      print _txt('en.server.sql', null, $co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['persistent']);
                     }
 
                   ?>
@@ -228,7 +228,7 @@ $token_key = $this->request->params['_Token']['key'];
                 <div class="field-info">
                   <?php
                     $attrs = array();
-                    $attrs['value'] = (isset($co_entitlement_provisioner_targets) ? $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['encoding'] : '');
+                    $attrs['value'] = (isset($co_mitre_id_provisioner_targets) ? $co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['encoding'] : '');
                     $attrs['empty'] = false;
 
                     if($e) {
@@ -240,7 +240,7 @@ $token_key = $this->request->params['_Token']['key'];
                         print $this->Form->error('encoding');
                       }
                     } else {
-                      print _txt('en.server.sql', null, $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['encoding']);
+                      print _txt('en.server.sql', null, $co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['encoding']);
                     }
 
                   ?>
@@ -263,35 +263,35 @@ $token_key = $this->request->params['_Token']['key'];
            <li id="fields-stats" class="fieldGroup">
             <a href="#tabs-stats" class="fieldGroupName">
                   <em class="material-icons">indeterminate_check_box</em>
-                  <?php print _txt('pl.entitlement_provisioner.pl_config'); ?>
+                  <?php print _txt('pl.mitre_id_provisioner.pl_config'); ?>
             </a>
             <div id="names-container" class="fields">
               <ul id="tabs-stats" class="fields form-list">
                         <li>
             <div class="field-name">
               <div class="field-title">
-                <?php print _txt('pl.entitlement_provisioner.enable.vowhitelist'); ?>
+                <?php print _txt('pl.mitre_id_provisioner.enable.vowhitelist'); ?>
               </div>
-              <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.enable.vowhitelist.desc'); ?></div>
+              <div class="field-desc"><?php print _txt('pl.mitre_id_provisioner.enable.vowhitelist.desc'); ?></div>
             </div>
             <div class="field-info checkbox">
               <?php print ($e
                           ? $this->Form->input('enable_vo_whitelist', array('onChange' => 'fields_update_gadgets();')) . ' ' .
-                            $this->Form->label('enable_vo_whitelist', _txt('pl.entitlement_provisioner.enable.vowhitelist'))
-                          : filter_var($co_entitlement_provisioner_targets[0]['CoEntitlementProvisionerTarget']['enable_vo_whitelist'],FILTER_SANITIZE_SPECIAL_CHARS)); ?>
+                            $this->Form->label('enable_vo_whitelist', _txt('pl.mitre_id_provisioner.enable.vowhitelist'))
+                          : filter_var($co_mitre_id_provisioner_targets[0]['CoMitreIdProvisionerTarget']['enable_vo_whitelist'],FILTER_SANITIZE_SPECIAL_CHARS)); ?>
             </div>
             <ul class="field-children">
               <li id="fields-stats" class="field-stack">      
                       <div class="field-name">
                         <div class="field-title">
-                          <?php print $this->Form->label('vo_whitelist',_txt('pl.entitlement_provisioner.vo_whitelist')); ?>
+                          <?php print $this->Form->label('vo_whitelist',_txt('pl.mitre_id_provisioner.vo_whitelist')); ?>
                         </div>
-                        <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.vo_whitelist.desc'); ?></div>
+                        <div class="field-desc"><?php print _txt('pl.mitre_id_provisioner.vo_whitelist.desc'); ?></div>
                       </div>
                       <div class="field-info">
                         <?php
-                          $intro = empty($co_entitlement_provisioner_targets[0]['CoEntitlementProvisionerTarget']['vo_whitelist']) ? ""
-                                  : filter_var($co_entitlement_provisioner_targets[0]['CoEntitlementProvisionerTarget']['vo_whitelist'],FILTER_SANITIZE_SPECIAL_CHARS);
+                          $intro = empty($co_mitre_id_provisioner_targets[0]['CoMitreIdProvisionerTarget']['vo_whitelist']) ? ""
+                                  : filter_var($co_mitre_id_provisioner_targets[0]['CoMitreIdProvisionerTarget']['vo_whitelist'],FILTER_SANITIZE_SPECIAL_CHARS);
                           print $this->Form->textarea('vo_whitelist', array('size' => 4000, 'rows' => 5, 'value' => $intro));
                         ?>
                       </div>
@@ -302,15 +302,15 @@ $token_key = $this->request->params['_Token']['key'];
                   <li>
                       <div class="field-name">
                         <div class="field-title">
-                          <?php print $this->Form->label('vo_roles',_txt('pl.entitlement_provisioner.vo_roles')); ?>
+                          <?php print $this->Form->label('vo_roles',_txt('pl.mitre_id_provisioner.vo_roles')); ?>
                           <span class="required">*</span>
                         </div>
-                        <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.vo_roles.desc'); ?></div>
+                        <div class="field-desc"><?php print _txt('pl.mitre_id_provisioner.vo_roles.desc'); ?></div>
                       </div>
                       <div class="field-info">
                         <?php
-                          $vo_roles_value = empty($co_entitlement_provisioner_targets[0]['CoEntitlementProvisionerTarget']['vo_roles']) ? ""
-                                  : filter_var($co_entitlement_provisioner_targets[0]['CoEntitlementProvisionerTarget']['vo_roles'],FILTER_SANITIZE_SPECIAL_CHARS);
+                          $vo_roles_value = empty($co_mitre_id_provisioner_targets[0]['CoMitreIdProvisionerTarget']['vo_roles']) ? ""
+                                  : filter_var($co_mitre_id_provisioner_targets[0]['CoMitreIdProvisionerTarget']['vo_roles'],FILTER_SANITIZE_SPECIAL_CHARS);
                           print $this->Form->input('vo_roles', array('size' => 256, 'value' => $vo_roles_value));
                         ?>
                       </div>
@@ -318,18 +318,18 @@ $token_key = $this->request->params['_Token']['key'];
                   <li>
                   <div class="field-name">
                     <div class="field-title">
-                      <?php print $this->Form->label('merge_entitlements',_txt('pl.entitlement_provisioner.merge_entitlements')); ?>
+                      <?php print $this->Form->label('merge_entitlements',_txt('pl.mitre_id_provisioner.merge_entitlements')); ?>
                     </div>
-                    <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.merge_entitlements.desc'); ?></div>
+                    <div class="field-desc"><?php print _txt('pl.mitre_id_provisioner.merge_entitlements.desc'); ?></div>
                 </div>
                 <div class="field-info">
                     <?php
                     $attrs = array();
-                    $attrs['value'] = (isset($co_entitlement_provisioner_targets) ? $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['merge_entitlements'] : '');
+                    $attrs['value'] = (isset($co_mitre_id_provisioner_targets) ? $co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['merge_entitlements'] : '');
                     $attrs['empty'] = false;
 
                     if($e) {
-                      print $this->Form->checkbox('CoEntitlementProvisionerTarget.merge_entitlements',
+                      print $this->Form->checkbox('CoMitreIdProvisionerTarget.merge_entitlements',
                                                 $vv_persistent_list,
                                                 $attrs);
 
@@ -337,7 +337,7 @@ $token_key = $this->request->params['_Token']['key'];
                         print $this->Form->error('merge_entitlements');
                       }
                     } else {
-                      print _txt('en.server.sql', null, $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['merge_entitlements']);
+                      print _txt('en.server.sql', null, $co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['merge_entitlements']);
                     }
 
                   ?>
@@ -346,15 +346,15 @@ $token_key = $this->request->params['_Token']['key'];
                   <li>
                     <div class="field-name">
                         <div class="field-title">
-                          <?php print $this->Form->label('urn_namespace',_txt('pl.entitlement_provisioner.urn_namespace')); ?>
+                          <?php print $this->Form->label('urn_namespace',_txt('pl.mitre_id_provisioner.urn_namespace')); ?>
                           <span class="required">*</span>
                         </div>
-                        <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.urn_namespace.desc'); ?></div>
+                        <div class="field-desc"><?php print _txt('pl.mitre_id_provisioner.urn_namespace.desc'); ?></div>
                       </div>
                       <div class="field-info">
                         <?php
-                          $value = empty($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['urn_namespace']) ? ''
-                          : filter_var($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['urn_namespace'],FILTER_SANITIZE_SPECIAL_CHARS);
+                          $value = empty($co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['urn_namespace']) ? ''
+                          : filter_var($co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['urn_namespace'],FILTER_SANITIZE_SPECIAL_CHARS);
                           print $this->Form->input('urn_namespace', array('size' => 50,'value' => $value));
                         ?>
                       </div>
@@ -362,15 +362,15 @@ $token_key = $this->request->params['_Token']['key'];
                   <li>
                     <div class="field-name">
                         <div class="field-title">
-                          <?php print $this->Form->label('urn_authority',_txt('pl.entitlement_provisioner.urn_authority')); ?>
+                          <?php print $this->Form->label('urn_authority',_txt('pl.mitre_id_provisioner.urn_authority')); ?>
                           <span class="required">*</span>
                         </div>
-                        <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.urn_authority.desc'); ?></div>
+                        <div class="field-desc"><?php print _txt('pl.mitre_id_provisioner.urn_authority.desc'); ?></div>
                       </div>
                       <div class="field-info">
                         <?php
-                          $value = empty($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['urn_authority']) ? ''
-                          : filter_var($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['urn_authority'],FILTER_SANITIZE_SPECIAL_CHARS);
+                          $value = empty($co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['urn_authority']) ? ''
+                          : filter_var($co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['urn_authority'],FILTER_SANITIZE_SPECIAL_CHARS);
                           print $this->Form->input('urn_authority', array('size' => 50,'value' => $value));
                         ?>
                       </div>
@@ -378,14 +378,14 @@ $token_key = $this->request->params['_Token']['key'];
                   <li>
                   <div class="field-name">
                       <div class="field-title">
-                        <?php print $this->Form->label('urn_legacy',_txt('pl.entitlement_provisioner.urn_legacy')); ?>
+                        <?php print $this->Form->label('urn_legacy',_txt('pl.mitre_id_provisioner.urn_legacy')); ?>
                       </div>
-                      <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.urn_legacy.desc'); ?></div>
+                      <div class="field-desc"><?php print _txt('pl.mitre_id_provisioner.urn_legacy.desc'); ?></div>
                     </div>
                     <div class="field-info">
                       <?php
                   $attrs = array();
-                  $attrs['value'] = (isset($co_entitlement_provisioner_targets) ? $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['urn_legacy'] : '');
+                  $attrs['value'] = (isset($co_mitre_id_provisioner_targets) ? $co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['urn_legacy'] : '');
                   $attrs['empty'] = false;
 
                   if($e) {
@@ -397,7 +397,7 @@ $token_key = $this->request->params['_Token']['key'];
                       print $this->Form->error('urn_legacy');
                     }
                   } else {
-                    print _txt('en.server.sql', null, $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['urn_legacy']);
+                    print _txt('en.server.sql', null, $co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['urn_legacy']);
                   }
 
                 ?>
@@ -406,14 +406,14 @@ $token_key = $this->request->params['_Token']['key'];
                   <li>
                   <div class="field-name">
                       <div class="field-title">
-                        <?php print $this->Form->label('vo_group_prefix',_txt('pl.entitlement_provisioner.vo_group_prefix')); ?>
+                        <?php print $this->Form->label('vo_group_prefix',_txt('pl.mitre_id_provisioner.vo_group_prefix')); ?>
                       </div>
-                      <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.vo_group_prefix.desc'); ?></div>
+                      <div class="field-desc"><?php print _txt('pl.mitre_id_provisioner.vo_group_prefix.desc'); ?></div>
                     </div>
                     <div class="field-info">
                         <?php
-                          $value = empty($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['vo_group_prefix']) ? ''
-                          : filter_var($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['vo_group_prefix'],FILTER_SANITIZE_SPECIAL_CHARS);
+                          $value = empty($co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['vo_group_prefix']) ? ''
+                          : filter_var($co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['vo_group_prefix'],FILTER_SANITIZE_SPECIAL_CHARS);
                           print $this->Form->input('vo_group_prefix', array('size' => 50,'value' => $value));
                         ?>
                       </div>
@@ -421,14 +421,14 @@ $token_key = $this->request->params['_Token']['key'];
                   <li>
                     <div class="field-name">
                       <div class="field-title">
-                        <?php print $this->Form->label('entitlement_format',_txt('pl.entitlement_provisioner.entitlement_format')); ?>
+                        <?php print $this->Form->label('entitlement_format',_txt('pl.mitre_id_provisioner.entitlement_format')); ?>
                       </div>
-                      <div class="field-desc"><?php print _txt('pl.entitlement_provisioner.entitlement_format.desc'); ?></div>
+                      <div class="field-desc"><?php print _txt('pl.mitre_id_provisioner.entitlement_format.desc'); ?></div>
                     </div>
                     <div class="field-info">
                         <?php
-                          $value = empty($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['entitlement_format']) ? ''
-                          : filter_var($co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['entitlement_format'],FILTER_SANITIZE_SPECIAL_CHARS);
+                          $value = empty($co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['entitlement_format']) ? ''
+                          : filter_var($co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['entitlement_format'],FILTER_SANITIZE_SPECIAL_CHARS);
                           print $this->Form->input('entitlement_format', array('size' => 50,'value' => $value));
                         ?>
                     </div>
@@ -436,14 +436,14 @@ $token_key = $this->request->params['_Token']['key'];
                   <li>
                     <div class="field-name">
                       <div class="field-title">
-                        <?php print ($e ? $this->Form->label('identifier_type', _txt('pl.entitlement_provisioner.identifier_type')) : _txt('pl.entitlement_provisioner.identifier_type')); ?><span class="required">*</span>
+                        <?php print ($e ? $this->Form->label('identifier_type', _txt('pl.mitre_id_provisioner.identifier_type')) : _txt('pl.mitre_id_provisioner.identifier_type')); ?><span class="required">*</span>
                       </div>
                     </div>
                     <div class="field-info">
                       <?php
   
                         $attrs = array();
-                        $attrs['value'] = (isset($co_entitlement_provisioner_targets) ? $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['identifier_type'] : '');
+                        $attrs['value'] = (isset($co_mitre_id_provisioner_targets) ? $co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['identifier_type'] : '');
                         $attrs['empty'] = false;
 
                         if($e) {
@@ -455,7 +455,7 @@ $token_key = $this->request->params['_Token']['key'];
                             print $this->Form->error('type');
                           }
                         } else {
-                          print _txt('pl.entitlement_provisioner.identifier_type', null, $co_entitlement_provisioner_targets[0]["CoEntitlementProvisionerTarget"]['identifier_type']);
+                          print _txt('pl.mitre_id_provisioner.identifier_type', null, $co_mitre_id_provisioner_targets[0]["CoMitreIdProvisionerTarget"]['identifier_type']);
                         }
                       ?>
                     </div>
@@ -547,7 +547,7 @@ $token_key = $this->request->params['_Token']['key'];
               type: "POST",
               url: '<?php echo $this->Html->url(array(
                 'plugin' => Inflector::singularize(Inflector::tableize($this->plugin)),
-                'controller' => 'co_entitlement_provisioner_targets',
+                'controller' => 'co_mitre_id_provisioner_targets',
                 'action' => 'testconnection',
                 'co'  => $cur_co['Co']['id'])); ?>',
               beforeSend: function(xhr) {

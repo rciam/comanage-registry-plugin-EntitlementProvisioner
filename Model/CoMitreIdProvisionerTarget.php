@@ -35,11 +35,11 @@ App::uses('Hash', 'Utility');
 /**
  * Class VomsProvisionerTarget
  */
-class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
+class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
 {
   // XXX All the classes/models that have tables should start with CO for the case of provisioners
   // Define class name for cake
-  public $name = "CoEntitlementProvisionerTarget";
+  public $name = "CoMitreIdProvisionerTarget";
 
   // Add behaviors
   public $actsAs = array('Containable');
@@ -60,19 +60,19 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
   public function beforeSave($options = array())
   {
     //remove new lines and whitespaces for "VO Whitelist" field
-    if(isset($this->data['CoEntitlementProvisionerTarget']['vo_whitelist'])) {
-      $this->data['CoEntitlementProvisionerTarget']['vo_whitelist'] = str_replace(array("\r", "\n"), '', $this->data['CoEntitlementProvisionerTarget']['vo_whitelist']);
-      $values = explode(',', $this->data['CoEntitlementProvisionerTarget']['vo_whitelist']);
+    if(isset($this->data['CoMitreIdProvisionerTarget']['vo_whitelist'])) {
+      $this->data['CoMitreIdProvisionerTarget']['vo_whitelist'] = str_replace(array("\r", "\n"), '', $this->data['CoMitreIdProvisionerTarget']['vo_whitelist']);
+      $values = explode(',', $this->data['CoMitreIdProvisionerTarget']['vo_whitelist']);
       foreach($values as $key=>$value){
           $values[$key] = trim($value);
       }
-      $this->data['CoEntitlementProvisionerTarget']['vo_whitelist'] = implode(',', $values);
+      $this->data['CoMitreIdProvisionerTarget']['vo_whitelist'] = implode(',', $values);
     }
-    if(isset($this->data['CoEntitlementProvisionerTarget']['password'])) {
+    if(isset($this->data['CoMitreIdProvisionerTarget']['password'])) {
       $key = Configure::read('Security.salt');
       Configure::write('Security.useOpenSsl', true);
-      $password = base64_encode(Security::encrypt($this->data['CoEntitlementProvisionerTarget']['password'], $key));
-      $this->data['CoEntitlementProvisionerTarget']['password'] = $password;
+      $password = base64_encode(Security::encrypt($this->data['CoMitreIdProvisionerTarget']['password'], $key));
+      $this->data['CoMitreIdProvisionerTarget']['password'] = $password;
     }
   }
 
@@ -85,17 +85,17 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         'alias' => 'co_provisioning_targets',
         'type' => 'INNER',
         'conditions' => array(
-          'CoEntitlementProvisionerTarget.co_provisioning_target_id = co_provisioning_targets.id'
+          'CoMitreIdProvisionerTarget.co_provisioning_target_id = co_provisioning_targets.id'
         )
       )
     );
     $args['conditions']['co_provisioning_targets.co_id'] = $coId;
-    $args['conditions']['co_provisioning_targets.plugin'] = 'EntitlementProvisioner';
+    $args['conditions']['co_provisioning_targets.plugin'] = 'MitreIdProvisioner';
 
-    $entitlementProvisioners = $this->find('all', $args);
+    $mitreIdProvisioners = $this->find('all', $args);
 
     //Return only the first result. What if we have more than one?? Is it possible?
-    return $entitlementProvisioners[0]['CoEntitlementProvisionerTarget'];
+    return $mitreIdProvisioners[0]['CoMitreIdProvisionerTarget'];
   }
 
   // Validation rules for table elements
@@ -109,8 +109,8 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
       'rule' => array(
         'inList',
         array(
-          EntitlementProvisionerDBDriverTypeEnum::Mysql,
-          EntitlementProvisionerDBDriverTypeEnum::Postgres
+          MitreIdProvisionerDBDriverTypeEnum::Mysql,
+          MitreIdProvisionerDBDriverTypeEnum::Postgres
         )
       ),
       'required' => true
@@ -161,12 +161,12 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
       'rule' => array(
         'inList',
         array(
-          EntitlementProvisionerDBEncodingTypeEnum::utf_8,
-          EntitlementProvisionerDBEncodingTypeEnum::iso_8859_7,
-          EntitlementProvisionerDBEncodingTypeEnum::latin1,
-          EntitlementProvisionerDBEncodingTypeEnum::latin2,
-          EntitlementProvisionerDBEncodingTypeEnum::latin3,
-          EntitlementProvisionerDBEncodingTypeEnum::latin4
+          MitreIdProvisionerDBEncodingTypeEnum::utf_8,
+          MitreIdProvisionerDBEncodingTypeEnum::iso_8859_7,
+          MitreIdProvisionerDBEncodingTypeEnum::latin1,
+          MitreIdProvisionerDBEncodingTypeEnum::latin2,
+          MitreIdProvisionerDBEncodingTypeEnum::latin3,
+          MitreIdProvisionerDBEncodingTypeEnum::latin4
         )
       ),
       'required' => true,
@@ -219,20 +219,20 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
       'rule' => array(
         'inList',
           array(
-                EntitlementProvisionerIdentifierEnum::Badge,
-                EntitlementProvisionerIdentifierEnum::Enterprise,
-                EntitlementProvisionerIdentifierEnum::ePPN,
-                EntitlementProvisionerIdentifierEnum::ePTID,
-                EntitlementProvisionerIdentifierEnum::ePUID,
-                EntitlementProvisionerIdentifierEnum::Mail,
-                EntitlementProvisionerIdentifierEnum::National,
-                EntitlementProvisionerIdentifierEnum::Network,
-                EntitlementProvisionerIdentifierEnum::OpenID,
-                EntitlementProvisionerIdentifierEnum::ORCID,
-                EntitlementProvisionerIdentifierEnum::ProvisioningTarget,
-                EntitlementProvisionerIdentifierEnum::Reference,
-                EntitlementProvisionerIdentifierEnum::SORID,
-                EntitlementProvisionerIdentifierEnum::UID
+                MitreIdProvisionerIdentifierEnum::Badge,
+                MitreIdProvisionerIdentifierEnum::Enterprise,
+                MitreIdProvisionerIdentifierEnum::ePPN,
+                MitreIdProvisionerIdentifierEnum::ePTID,
+                MitreIdProvisionerIdentifierEnum::ePUID,
+                MitreIdProvisionerIdentifierEnum::Mail,
+                MitreIdProvisionerIdentifierEnum::National,
+                MitreIdProvisionerIdentifierEnum::Network,
+                MitreIdProvisionerIdentifierEnum::OpenID,
+                MitreIdProvisionerIdentifierEnum::ORCID,
+                MitreIdProvisionerIdentifierEnum::ProvisioningTarget,
+                MitreIdProvisionerIdentifierEnum::Reference,
+                MitreIdProvisionerIdentifierEnum::SORID,
+                MitreIdProvisionerIdentifierEnum::UID
           )
       ),
       'required' => true
@@ -248,21 +248,21 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
    * @throws MissingConnectionException The database connection failed
    */
 
-  public function connect($coPersonId, $dbconfig = array(), $co_entitlement_provisioner_target = NULL)
+  public function connect($coPersonId, $dbconfig = array(), $co_mitre_id_provisioner_target = NULL)
   {
 
     if (empty($dbconfig)) {
       
       Configure::write('Security.useOpenSsl', true);
       $dbconfig = array(
-        'datasource' => 'Database/' . EntitlementProvisionerDBDriverTypeEnum::type[$co_entitlement_provisioner_target['CoEntitlementProvisionerTarget']['type']],
-        'persistent' => $co_entitlement_provisioner_target['CoEntitlementProvisionerTarget']['persistent'],
-        'host'       => $co_entitlement_provisioner_target['CoEntitlementProvisionerTarget']['hostname'],
-        'login'      => $co_entitlement_provisioner_target['CoEntitlementProvisionerTarget']['username'],
-        'password'   => Security::decrypt(base64_decode($co_entitlement_provisioner_target['CoEntitlementProvisionerTarget']['password']), Configure::read('Security.salt')),
-        'database'   => $co_entitlement_provisioner_target['CoEntitlementProvisionerTarget']['databas'],
-        'encoding'   => $co_entitlement_provisioner_target['CoEntitlementProvisionerTarget']['encoding'],
-        'port'       => $co_entitlement_provisioner_target['CoEntitlementProvisionerTarget']['port'],
+        'datasource' => 'Database/' . MitreIdProvisionerDBDriverTypeEnum::type[$co_mitre_id_provisioner_target['CoMitreIdProvisionerTarget']['type']],
+        'persistent' => $co_mitre_id_provisioner_target['CoMitreIdProvisionerTarget']['persistent'],
+        'host'       => $co_mitre_id_provisioner_target['CoMitreIdProvisionerTarget']['hostname'],
+        'login'      => $co_mitre_id_provisioner_target['CoMitreIdProvisionerTarget']['username'],
+        'password'   => Security::decrypt(base64_decode($co_mitre_id_provisioner_target['CoMitreIdProvisionerTarget']['password']), Configure::read('Security.salt')),
+        'database'   => $co_mitre_id_provisioner_target['CoMitreIdProvisionerTarget']['databas'],
+        'encoding'   => $co_mitre_id_provisioner_target['CoMitreIdProvisionerTarget']['encoding'],
+        'port'       => $co_mitre_id_provisioner_target['CoMitreIdProvisionerTarget']['port'],
       );
       
     }
@@ -271,9 +271,9 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
     // Port Value
     if (empty($dbconfig['port'])) {
       if ($dbconfig['datasource'] === 'Database/Mysql') {
-        $dbconfig['port'] = EntitlementProvisionerDBPortsEnum::Mysql;
+        $dbconfig['port'] = MitreIdProvisionerDBPortsEnum::Mysql;
       } else if ($dbconfig['datasource'] === 'Database/Postgres') {
-        $dbconfig['port'] = EntitlementProvisionerDBPortsEnum::Postgres;
+        $dbconfig['port'] = MitreIdProvisionerDBPortsEnum::Postgres;
       }
     }
 
@@ -386,13 +386,13 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         $data['co_id'] = $provisioningData['Co']['id'];
         $data['co_person_identifier'] = $provisioningData['CoPerson']['actor_identifier'];
         $data['co_person_id'] = $provisioningData['CoPerson']['id'];
-        $data['co_person_identifier'] = Hash::extract($provisioningData['Identifier'], '{n}[type=' . $coProvisioningTargetData['CoEntitlementProvisionerTarget']['identifier_type'] . '].identifier')[0];
+        $data['co_person_identifier'] = Hash::extract($provisioningData['Identifier'], '{n}[type=' . $coProvisioningTargetData['CoMitreIdProvisionerTarget']['identifier_type'] . '].identifier')[0];
         break;
       case ProvisioningActionEnum::CoPersonUpdated:
         $data['co_id'] = $provisioningData['Co']['id'];
         $data['co_person_identifier'] = $provisioningData['CoPerson']['actor_identifier'];
         $data['co_person_id'] = $provisioningData['CoPerson']['id'];
-        $data['co_person_identifier'] = Hash::extract($provisioningData['Identifier'], '{n}[type=' . $coProvisioningTargetData['CoEntitlementProvisionerTarget']['identifier_type'] . '].identifier')[0];
+        $data['co_person_identifier'] = Hash::extract($provisioningData['Identifier'], '{n}[type=' . $coProvisioningTargetData['CoMitreIdProvisionerTarget']['identifier_type'] . '].identifier')[0];
         break;
       case ProvisioningActionEnum::CoPersonExpired:
         break;
@@ -405,7 +405,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         //$co_person_identifier = $provisioningData['CoGroup']['CoPerson']['actor_identifier'];
         $data['co_person_id'] = $provisioningData['CoGroup']['CoPerson']['id'];
         $identifier = ClassRegistry::init('Identifier');
-        $data['co_person_identifier'] = $identifier->field('identifier', array('co_person_id' => $data['co_person_id'], 'type' => $coProvisioningTargetData['CoEntitlementProvisionerTarget']['identifier_type']));
+        $data['co_person_identifier'] = $identifier->field('identifier', array('co_person_id' => $data['co_person_id'], 'type' => $coProvisioningTargetData['CoMitreIdProvisionerTarget']['identifier_type']));
         break;
       case ProvisioningActionEnum::CoGroupDeleted: 
         break;
@@ -423,11 +423,11 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         return; 
 
       // Construct connect_id
-      if(!empty($data['co_group_id'])) {
-        $connect_id = $data['co_group_id'];
-      }
-      else if(!empty($data['co_person_id'])) {
+      if(!empty($data['co_person_id'])) {
         $connect_id = $data['co_person_id'];
+      }
+      else if(!empty($data['co_group_id'])){
+        $connect_id = $data['co_group_id'];
       }
       else if(!empty($data['cou_id'])) {
         $connect_id = $data['cou_id'];
@@ -435,23 +435,26 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
       else {
         return;
       }
+
+
       $datasource = $this->connect($connect_id, array(), $coProvisioningTargetData);
       $mitre_id = ClassRegistry::init('MitreIdUsers');
-      MitreId::config($mitre_id, $datasource, 'user_info', $coProvisioningTargetData['CoEntitlementProvisionerTarget']['entitlement_format']);
+      MitreId::config($mitre_id, $datasource, 'user_info', $coProvisioningTargetData['CoMitreIdProvisionerTarget']['entitlement_format']);
       if(!empty($data['group_name']) && !empty($data['delete_group'])) { //group Deleted
+        // Delete All Entitlements For this Group
         MitreId::deleteEntitlementsByGroup($mitre_id, 
                                           $data['group_name'], 
-                                          $coProvisioningTargetData['CoEntitlementProvisionerTarget']['urn_namespace'], 
-                                          $coProvisioningTargetData['CoEntitlementProvisionerTarget']['urn_legacy'], 
-                                          $coProvisioningTargetData['CoEntitlementProvisionerTarget']['urn_authority'], 
-                                          SyncEntitlements::get_vo_group_prefix($coProvisioningTargetData['CoEntitlementProvisionerTarget']['vo_group_prefix'], 
+                                          $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_namespace'], 
+                                          $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_legacy'], 
+                                          $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_authority'], 
+                                          SyncEntitlements::get_vo_group_prefix($coProvisioningTargetData['CoMitreIdProvisionerTarget']['vo_group_prefix'], 
                                           $data['co_id']));
       }
       else if(!empty($data['rename_group'])) { //group Renamed
-        
+       // Rename All Entitlements For this Group 
       }
       else if(!empty($data['cou_id']) && !empty($data['cou_name'])) { //cou Deleted
-
+        
       }
       else {
         //Get Person by the epuid
@@ -463,7 +466,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
         } 
         //Get User Entitlements From MitreId
         $mitre_id_entitlements = ClassRegistry::init('MitreIdEntitlements');
-        MitreId::config($mitre_id_entitlements, $datasource, 'user_edu_person_entitlement', $coProvisioningTargetData['CoEntitlementProvisionerTarget']['entitlement_format']);
+        MitreId::config($mitre_id_entitlements, $datasource, 'user_edu_person_entitlement', $coProvisioningTargetData['CoMitreIdProvisionerTarget']['entitlement_format']);
         if(!empty($data['user_deleted'])) {
           MitreId::deleteAllEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id']);  
         }
@@ -471,7 +474,7 @@ class CoEntitlementProvisionerTarget extends CoProvisionerPluginTarget
           $current_entitlements = MitreId::getCurrentEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id']);
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => current_entitlements from MitreId' . var_export($current_entitlements, true), LOG_DEBUG);           
           //Get New Entitlements From Comanage
-          $syncEntitlements = new SyncEntitlements($coProvisioningTargetData['CoEntitlementProvisionerTarget'],$data['co_id']);
+          $syncEntitlements = new SyncEntitlements($coProvisioningTargetData['CoMitreIdProvisionerTarget'],$data['co_id']);
           $new_entitlements = $syncEntitlements->getEntitlements($data['co_person_id']);
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => new_entitlements from comanage' . var_export($new_entitlements, true), LOG_DEBUG);           
     

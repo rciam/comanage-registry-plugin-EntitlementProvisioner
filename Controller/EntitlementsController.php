@@ -34,7 +34,7 @@ class EntitlementsController extends StandardController
 
   public $uses = array(
     'CoGroup',
-    'EntitlementProvisioner.CoEntitlementProvisionerTarget'
+    'MitreIdProvisioner.CoMitreIdProvisionerTarget'
   );
 
   function index()
@@ -47,7 +47,7 @@ class EntitlementsController extends StandardController
       // currently support.
 
       try {       
-        $syncEntitlements = new SyncEntitlements($this->CoEntitlementProvisionerTarget->getConfiguration($this->params['url']['coid']),$this->params['url']['coid']);
+        $syncEntitlements = new SyncEntitlements($this->CoMitreIdProvisionerTarget->getConfiguration($this->params['url']['coid']),$this->params['url']['coid']);
         $groups = $syncEntitlements->getEntitlements($this->params['url']['copersonid']);
 
         if (!empty($groups)) {

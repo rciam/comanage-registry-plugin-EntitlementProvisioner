@@ -63,7 +63,18 @@ class MitreId
     }
   }
   
-  //not tested yet
+  //not tested yet  
+  /**
+   * deleteEntitlementsByGroup
+   *
+   * @param  mixed $mitreId
+   * @param  mixed $group_name
+   * @param  mixed $urn_namespace
+   * @param  mixed $urn_legacy
+   * @param  mixed $urn_authority
+   * @param  mixed $vo_group_prefix
+   * @return void
+   */
   public static function deleteEntitlementsByGroup($mitreId, $group_name, $urn_namespace, $urn_legacy, $urn_authority, $vo_group_prefix) {
     if(strpos($mitreId->entitlementFormat,"/") === 0)
       $regex = explode('/', $mitreId->entitlementFormat)[1];
@@ -82,7 +93,19 @@ class MitreId
 //    $mitreId->query($query);
   }
 
-  //not tested yet
+  //not tested yet  
+  /**
+   * renamentitlementsByGroup
+   *
+   * @param  mixed $mitreId
+   * @param  mixed $old_group_name
+   * @param  mixed $new_group_name
+   * @param  mixed $urn_namespace
+   * @param  mixed $urn_legacy
+   * @param  mixed $urn_authority
+   * @param  mixed $vo_group_prefix
+   * @return void
+   */
   public static function renamentitlementsByGroup($mitreId, $old_group_name, $new_group_name,  $urn_namespace, $urn_legacy, $urn_authority, $vo_group_prefix) {
     if(strpos($mitreId->entitlementFormat,"/") == 0) {
       $regex = explode('/', $mitreId->entitlementFormat)[1];

@@ -342,7 +342,7 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
         $Cou = ClassRegistry::init('Cou');
         $data['cou'] = $Cou->query('SELECT name as group_name, id as cou_id FROM cm_cous WHERE cou_id=' . $data['new_cou']['cou_id'] . '  AND revision = (SELECT MAX(revision) FROM cm_cous c2 WHERE c2.cou_id=' . $data['new_cou']['cou_id'] . ');')[0][0];//we need the previous name
         $data['new_cou']['group_name'] = $_REQUEST['data']['Cou']['name'];
-        $data['new_cou']['cou_id'] = $data['cou_id'];
+        
         if($data['new_cou']['group_name']  != $data['cou']['group_name']) {
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [Cou] Rename Cou with id:' . $data['cou_id'], LOG_DEBUG);
           $data['rename_cou'] = TRUE;

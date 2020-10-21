@@ -470,8 +470,8 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
       else if(!empty($data['rename_cou'])) { //cou Renamed
         // Rename All Entitlements For this Cou
         $paths= SyncEntitlements::getCouTreeStructureStatic(array($data['cou'], $data['new_cou']));     
-        $new_group = $paths[1][$data['new_cou']['cou_id']]['path'];
-        $old_group = $paths[0][$data['cou']['cou_id']]['path'];        
+        $new_group = ((empty($path) || empty($path[1])) ? $data['new_cou']['group_name'] : $paths[1][$data['new_cou']['cou_id']]['path']);
+        $old_group = ((empty($path) || empty($path[0])) ? $data['cou']['group_name'] : $paths[0][$data['cou']['cou_id']]['path']);        
         MitreId::renameEntitlementsByCou($mitre_id, $old_group , $new_group, $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_namespace'], 
                                           $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_legacy'], 
                                           $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_authority']);

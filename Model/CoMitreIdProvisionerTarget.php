@@ -344,7 +344,7 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
         $data['new_cou']['group_name'] = $_REQUEST['data']['Cou']['name'];
         
         if($data['new_cou']['group_name']  != $data['cou']['group_name']) {
-          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [Cou] Rename Cou with id:' . $data['cou_id'], LOG_DEBUG);
+          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [Cou] Rename Cou with id:' . $data['new_cou']['cou_id'], LOG_DEBUG);
           $data['rename_cou'] = TRUE;
         }
       }

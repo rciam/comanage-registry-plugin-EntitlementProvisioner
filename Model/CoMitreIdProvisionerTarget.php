@@ -1,7 +1,7 @@
 <?php
 
 /**
- * COmanage Registry CO VOMs Provisioner Target Model
+ * COmanage Registry CO MitreId Provisioner Target Model
  *
  * Portions licensed to the University Corporation for Advanced Internet
  * Development, Inc. ("UCAID") under one or more contributor license agreements.
@@ -33,7 +33,7 @@ App::uses('Security', 'Utility');
 App::uses('Hash', 'Utility');
 
 /**
- * Class VomsProvisionerTarget
+ * Class MitreIdProvisionerTarget
  */
 class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
 {
@@ -330,19 +330,30 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
       else if(strpos(array_keys($_REQUEST)[0],'/co_groups/edit')!==FALSE) { 
         $data['co_group_id'] = explode('/', array_keys($_REQUEST)[0])[3];
         $CoGroup = ClassRegistry::init('CoGroup');
-        $data['group_name'] = $CoGroup->field('name', array('id' => $data['co_group_id']));
+        $data['group_name'] = $CoGroup->query('SELECT name as group_name, co_id FROM cm_co_groups WHERE co_group_id=' . $data['co_group_id'] . '  AND revision = (SELECT MAX(revision) FROM cm_co_groups g2 WHERE g2.co_group_id=' . $data['co_group_id'] . ');')[0][0]['group_name'];      
         $data['new_group_name'] = $_REQUEST['data']['CoGroup']['name'];
         if($data['group_name'] != $data['new_group_name']) {
           $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoGroup] Rename Group with id:' . $data['co_group_id'], LOG_DEBUG);
           $data['rename_group'] = TRUE;
         }
       }
-      else if(strpos(array_keys($_REQUEST)[0],'/cous/delete')!==FALSE) { //delete co group 
-        $data['cou_id'] = explode('/', array_keys($_REQUEST)[0])[3];
+      else if(strpos(array_keys($_REQUEST)[0],'/cous/edit')!==FALSE) {
+        $data['new_cou']['cou_id'] = explode('/', array_keys($_REQUEST)[0])[3];
         $Cou = ClassRegistry::init('Cou');
-        $data['cou_name'] = $Cou->field('name', array('id' => $data['cou_id']));
+        $data['cou'] = $Cou->query('SELECT name as group_name, id as cou_id FROM cm_cous WHERE cou_id=' . $data['new_cou']['cou_id'] . '  AND revision = (SELECT MAX(revision) FROM cm_cous c2 WHERE c2.cou_id=' . $data['new_cou']['cou_id'] . ');')[0][0];//we need the previous name
+        $data['new_cou']['group_name'] = $_REQUEST['data']['Cou']['name'];
+        $data['new_cou']['cou_id'] = $data['cou_id'];
+        if($data['new_cou']['group_name']  != $data['cou']['group_name']) {
+          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [Cou] Rename Cou with id:' . $data['cou_id'], LOG_DEBUG);
+          $data['rename_cou'] = TRUE;
+        }
+      }
+      else if(strpos(array_keys($_REQUEST)[0],'/cous/delete')!==FALSE) { //delete co group 
+        $data['cou']['cou_id'] = explode('/', array_keys($_REQUEST)[0])[3];       
+        $Cou = ClassRegistry::init('Cou');
+        $data['cou']['group_name'] = $Cou->field('name', array('id' => $data['cou']['cou_id']));
         $data['delete_cou'] = TRUE;
-        $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [Cou] Delete Cou with id:' . $data['cou_id'], LOG_DEBUG);
+        $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [Cou] Delete Cou with id:' . $data['cou']['cou_id'], LOG_DEBUG);
       }
       else if(strpos(array_keys($_REQUEST)[0],'/co_group_members/')!==FALSE && !empty($data['co_person_id'])) { //co group member action
         $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoGroupMember Action] for user with id:' . $data['co_person_id'], LOG_DEBUG);
@@ -397,8 +408,6 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
       case ProvisioningActionEnum::CoPersonExpired:
         break;
       case ProvisioningActionEnum::CoPersonPetitionProvisioned:
-        // An update may cause an existing person to be written to VOMS for the first time
-        // or for an unexpectedly removed entry to be replaced
         break;
       case ProvisioningActionEnum::CoGroupUpdated:
         $data['co_id'] = $provisioningData['CoGroup']['co_id'];
@@ -413,9 +422,9 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
         // Ignore all other actions
         $this->log(__METHOD__ . '::Provisioning action ' . $op . ' not allowed/implemented', LOG_DEBUG);
         return true;
-        break;
+        
       }
-      $this->log(__METHOD__ . 'Request' . var_export($_REQUEST, true), LOG_DEBUG);   
+      //$this->log(__METHOD__ . 'Request' . var_export($_REQUEST, true), LOG_DEBUG);   
        
       $data = $this->checkRequest($op, $provisioningData, $data);
 
@@ -429,13 +438,12 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
       else if(!empty($data['co_group_id'])){
         $connect_id = $data['co_group_id'];
       }
-      else if(!empty($data['cou_id'])) {
-        $connect_id = $data['cou_id'];
+      else if(!empty($data['cou']['cou_id'])) {
+        $connect_id = $data['cou']['cou_id'];
       }
       else {
         return;
       }
-
 
       $datasource = $this->connect($connect_id, array(), $coProvisioningTargetData);
       $mitre_id = ClassRegistry::init('MitreIdUsers');
@@ -452,9 +460,37 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
       }
       else if(!empty($data['rename_group'])) { //group Renamed
        // Rename All Entitlements For this Group 
+       MitreId::renameEntitlementsByGroup($mitre_id, $data['group_name'], $data['new_group_name'],
+                                          $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_namespace'], 
+                                          $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_legacy'], 
+                                          $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_authority'], 
+                                          SyncEntitlements::get_vo_group_prefix($coProvisioningTargetData['CoMitreIdProvisionerTarget']['vo_group_prefix'], $provisioningData['CoGroup']['co_id']));
       }
-      else if(!empty($data['cou_id']) && !empty($data['cou_name'])) { //cou Deleted
-        
+
+      else if(!empty($data['rename_cou'])) { //cou Renamed
+        // Rename All Entitlements For this Cou
+        $paths= SyncEntitlements::getCouTreeStructureStatic(array($data['cou'], $data['new_cou']));     
+        $new_group = $paths[1][$data['new_cou']['cou_id']]['path'];
+        $old_group = $paths[0][$data['cou']['cou_id']]['path'];        
+        MitreId::renameEntitlementsByCou($mitre_id, $old_group , $new_group, $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_namespace'], 
+                                          $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_legacy'], 
+                                          $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_authority']);
+       }
+      else if(!empty($data['delete_group'])) { //group Deleted
+        // Delete All Entitlements For this Group
+        MitreId::deleteEntitlementsByGroup($mitre_id, $data['group_name'], $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_namespace'], 
+        $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_legacy'], 
+        $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_authority'], 
+        SyncEntitlements::get_vo_group_prefix($coProvisioningTargetData['CoMitreIdProvisionerTarget']['vo_group_prefix'], $data['co_id']));
+      }
+      // Is needed for :admins group
+      else if(!empty($data['delete_cou'])) { //cou Deleted
+         // Delete All Entitlements For this Cou
+         $paths= SyncEntitlements::getCouTreeStructureStatic(array($data['cou']));     
+         $cou_name = $paths[0][$data['cou']['cou_id']]['path'];   
+         MitreId::deleteEntitlementsByCou($mitre_id, $cou_name, $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_namespace'], 
+                                          $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_legacy'], 
+                                          $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_authority']);
       }
       else {
         //Get Person by the epuid

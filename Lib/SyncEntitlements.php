@@ -133,6 +133,46 @@ class SyncEntitlements{
     CakeLog::write('debug', __METHOD__ . "::getCouTreeStructure: nested_cous_paths => " . var_export($this->nested_cous_paths, true), LOG_DEBUG);
   }
 
+  public static function getCouTreeStructureStatic($cous) {
+    $nested_cous_paths = array(); //local array
+    foreach($cous as $cou) {
+      
+      if(empty($cou['group_name']) || empty($cou['cou_id'])) {
+        continue;
+      }
+
+     
+      $recursive_query = QueryConstructor::getRecursiveQuery($cou['cou_id']);
+      $CoGroup = ClassRegistry::init('CoGroup');
+      $result = $CoGroup->query($recursive_query);
+
+      foreach($result as $row) {
+         // especially for comanage
+        $row = $row[0];
+        /// If ':' does exist
+        if(strpos($row['path'], ':') !== false) {
+          $path_group_list = explode(':', $row['path']);
+          $path_group_list = array_map(function($group){
+            return urlencode($group);
+          }, $path_group_list);
+
+          $nested_cous_paths[] = [
+            $cou['cou_id'] => [
+              'path'           => implode(':', $path_group_list),
+              'path_id_list'   => explode(':', $row['path_id']),
+              'path_full_list' => array_combine(
+                explode(':', $row['path_id']), // keys
+                $path_group_list     // values
+              ),
+            ],
+          ];
+        }
+      }
+    }
+    return $nested_cous_paths;
+    CakeLog::write('debug', __METHOD__ . "::getCouTreeStructure: nested_cous_paths => " . var_export($this->nested_cous_paths, true), LOG_DEBUG);
+  }
+
       /**
      * @param string $cou_name the name of the COU
      * @param array $cou_nested Array containing the tree structure of the relevant COUs as composed in getCouTreeStructure

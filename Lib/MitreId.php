@@ -63,7 +63,40 @@ class MitreId
     }
   }
   
-  //not tested yet  
+    /**
+   * renameEntitlementsByCou
+   *
+   * @param  mixed $mitreId
+   * @param  mixed $old_group_name
+   * @param  mixed $new_group_name
+   * @param  mixed $urn_namespace
+   * @param  mixed $urn_legacy
+   * @param  mixed $urn_authority
+   * @param  mixed $vo_group_prefix
+   * @return void
+   */
+  public static function deleteEntitlementsByCou($mitreId, $cou_name,  $urn_namespace, $urn_legacy, $urn_authority) {
+    if(strpos($mitreId->entitlementFormat,"/") == 0) {
+      $regex = explode('/', $mitreId->entitlementFormat)[1];
+    }
+    else {
+      $regex = $mitreId->entitlementFormat;
+    }
+    
+    $group = !empty($group_name) ? ":" . $group_name : "";
+    // cou_name are already url_encoded
+    $entitlement_regex = '^' . $urn_namespace . ":group:" . str_replace('+','\+', $cou_name) . $group . ":(.*)#" . $urn_authority;
+
+    if($urn_legacy) {
+      $entitlement_regex = '('. $entitlement_regex . ') | (^'.$urn_namespace . ":group:" . str_replace('+','\+', $cou_name) .'#'. $urn_authority . ')';
+    }
+    $query = 'DELETE FROM user_edu_person_entitlement'
+    . ' WHERE edu_person_entitlement ~  \''. $entitlement_regex .'\' AND edu_person_entitlement ~ \'' .$regex. '\'';
+
+    CakeLog::write('debug', __METHOD__ . ':: delete entitlements by cou: ' . $query, LOG_DEBUG);
+    $mitreId->query($query);
+  }
+   
   /**
    * deleteEntitlementsByGroup
    *
@@ -90,10 +123,10 @@ class MitreId
 
     CakeLog::write('debug', __METHOD__ . ':: delete entitlements by group: ' . $query, LOG_DEBUG);
 
-//    $mitreId->query($query);
+   $mitreId->query($query);
   }
 
-  //not tested yet  
+   
   /**
    * renamentitlementsByGroup
    *
@@ -106,7 +139,36 @@ class MitreId
    * @param  mixed $vo_group_prefix
    * @return void
    */
-  public static function renamentitlementsByGroup($mitreId, $old_group_name, $new_group_name,  $urn_namespace, $urn_legacy, $urn_authority, $vo_group_prefix) {
+  public static function renameEntitlementsByGroup($mitreId, $old_group_name, $new_group_name,  $urn_namespace, $urn_legacy, $urn_authority, $vo_group_prefix) {
+    if(strpos($mitreId->entitlementFormat,"/") == 0) {
+      $regex = explode('/', $mitreId->entitlementFormat)[1];
+    }
+    else {
+      $regex = $mitreId->entitlementFormat;
+    }
+    $entitlement_regex = '^' . $urn_namespace . ':group:' . $vo_group_prefix . ':' . str_replace('+','\+', urlencode($old_group_name)) . '(.*)';
+    if($urn_legacy) {
+      $entitlement_regex = '(' . $entitlement_regex . ') | (^' . $urn_namespace . ':' . $urn_authority . ':(.*)@' . str_replace('+','\+', urlencode($old_group_name)) . ')';
+    }
+    $query = 'UPDATE user_edu_person_entitlement SET edu_person_entitlement = REPLACE(edu_person_entitlement, \'' . urlencode($old_group_name) . '\',\'' . urlencode($new_group_name) . '\')'
+    . ' WHERE edu_person_entitlement ~  \'' . $entitlement_regex . '\' AND edu_person_entitlement ~ \'' . $regex . '\'';
+    CakeLog::write('debug', __METHOD__ . ':: rename entitlements by group: ' . $query, LOG_DEBUG);
+    $mitreId->query($query);
+  }
+
+  /**
+   * renameEntitlementsByCou
+   *
+   * @param  mixed $mitreId
+   * @param  mixed $old_group_name
+   * @param  mixed $new_group_name
+   * @param  mixed $urn_namespace
+   * @param  mixed $urn_legacy
+   * @param  mixed $urn_authority
+   * @param  mixed $vo_group_prefix
+   * @return void
+   */
+  public static function renameEntitlementsByCou($mitreId, $old_cou_name, $new_cou_name,  $urn_namespace, $urn_legacy, $urn_authority) {
     if(strpos($mitreId->entitlementFormat,"/") == 0) {
       $regex = explode('/', $mitreId->entitlementFormat)[1];
     }
@@ -114,16 +176,17 @@ class MitreId
       $regex = $mitreId->entitlementFormat;
     }
     
-      $entitlement_regex = '^'.$urn_namespace.':group:'.$vo_group_prefix.':'.urlencode($old_group_name).'(.*)'; 
-    if($urn_legacy) {
-      $entitlement_regex = '('. $entitlement_regex . ') | (^'.$urn_namespace.':'.$urn_authority.':(.*)@'.urlencode($old_group_name).')';
-    }
-      $query = 'UPDATE user_edu_person_entitlement SET edu_person_entitlement = REPLACE(edu_person_entitlement, '. $old_group_name .','. $new_group_name .')'
-      . 'WHERE edu_person_entitlement ~  \''. $entitlement_regex .'\' AND edu_person_entitlement ~ \'' .$regex. '\'';
-     
-      CakeLog::write('debug', __METHOD__ . ':: rename entitlements by group: ' . $query, LOG_DEBUG);
+    $group = !empty($group_name) ? ":" . $group_name : "";
+    // old_cou_name and new_cou_name are already url_encoded
+    $entitlement_regex = '^' . $urn_namespace . ":group:" . str_replace('+','\+', $old_cou_name) . $group . ":(.*)#" . $urn_authority;
 
-    //  $mitreId->query($query);
+    if($urn_legacy) {
+      $entitlement_regex = '('. $entitlement_regex . ') | (^'.$urn_namespace . ":group:" . str_replace('+','\+', $old_cou_name) .'#'. $urn_authority . ')';
+    }
+    $query = 'UPDATE user_edu_person_entitlement SET edu_person_entitlement = REPLACE(edu_person_entitlement, \''. $old_cou_name .'\',\''. $new_cou_name .'\') '
+    . 'WHERE edu_person_entitlement ~  \''. $entitlement_regex .'\' AND edu_person_entitlement ~ \'' .$regex. '\'';
+    CakeLog::write('debug', __METHOD__ . ':: rename entitlements by cou: ' . $query, LOG_DEBUG);
+    $mitreId->query($query);
   }
 
   /**

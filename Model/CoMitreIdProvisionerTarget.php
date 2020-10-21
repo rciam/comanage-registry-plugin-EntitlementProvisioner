@@ -293,7 +293,7 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
   public function checkRequest($op, $provisioningData,  $data) {
      
       // Check if its a request we want to provision
-      if(!empty($_REQUEST['_method']) && $_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole'] && $_REQUEST['data']['CoPersonRole']['status'] == 'S') && !empty($data['co_person_id'])) { //SUSPEND
+      if(!empty($_REQUEST['_method']) && $_REQUEST['_method'] == 'PUT' && !empty($_REQUEST['data']['CoPersonRole']) && $_REQUEST['data']['CoPersonRole']['status'] == 'S' && !empty($data['co_person_id'])) { //SUSPEND
         $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoPersonRole Form] Suspended User with id:' . $data['co_person_id'], LOG_DEBUG);
       }
       else if((!empty($_REQUEST['_method']) && ($_REQUEST['_method'] == 'PUT' || $_REQUEST['_method'] == 'POST')) && !empty($_REQUEST['data']['CoPersonRole']) && $_REQUEST['data']['CoPersonRole']['status'] == 'A' && !empty($data['co_person_id'])) { //ACTIVE
@@ -470,8 +470,8 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
       else if(!empty($data['rename_cou'])) { //cou Renamed
         // Rename All Entitlements For this Cou
         $paths= SyncEntitlements::getCouTreeStructureStatic(array($data['cou'], $data['new_cou']));     
-        $new_group = ((empty($path) || empty($path[1])) ? $data['new_cou']['group_name'] : $paths[1][$data['new_cou']['cou_id']]['path']);
-        $old_group = ((empty($path) || empty($path[0])) ? $data['cou']['group_name'] : $paths[0][$data['cou']['cou_id']]['path']);        
+        $new_group = ((empty($path) || empty($path[1])) ? urlencode($data['new_cou']['group_name']) : $paths[1][$data['new_cou']['cou_id']]['path']);
+        $old_group = ((empty($path) || empty($path[0])) ? urlencode($data['cou']['group_name']) : $paths[0][$data['cou']['cou_id']]['path']);        
         MitreId::renameEntitlementsByCou($mitre_id, $old_group , $new_group, $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_namespace'], 
                                           $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_legacy'], 
                                           $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_authority']);

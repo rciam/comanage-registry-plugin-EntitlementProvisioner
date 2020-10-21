@@ -5,7 +5,7 @@
 
   // Add page title & page buttons
   $params = array();
-  $params['title'] = "Edit "._txt('ct.co_entitlement_provisioner_targets.1');
+  $params['title'] = "Edit "._txt('ct.co_mitre_id_provisioner_targets.1');
   if(!empty($this->plugin)) {
     if(file_exists(APP . "Plugin/" . $this->plugin . "/View/" . $model . "/buttons.inc")) {
       include(APP . "Plugin/" . $this->plugin . "/View/" . $model . "/buttons.inc");

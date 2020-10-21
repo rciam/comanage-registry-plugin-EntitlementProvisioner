@@ -1,4 +1,4 @@
 <?php
-require_once LOCAL . DS . 'Plugin' . DS . 'EntitlementProvisioner' . DS . 'Lib' . DS . 'SyncEntitlements.php';
-require_once LOCAL . DS . 'Plugin' . DS . 'EntitlementProvisioner' . DS . 'Lib' . DS . 'QueryConstructor.php';
-require_once LOCAL . DS . 'Plugin' . DS . 'EntitlementProvisioner' . DS . 'Lib' . DS . 'MitreId.php';
+require_once LOCAL . DS . 'Plugin' . DS . 'MitreIdProvisioner' . DS . 'Lib' . DS . 'SyncEntitlements.php';
+require_once LOCAL . DS . 'Plugin' . DS . 'MitreIdProvisioner' . DS . 'Lib' . DS . 'QueryConstructor.php';
+require_once LOCAL . DS . 'Plugin' . DS . 'MitreIdProvisioner' . DS . 'Lib' . DS . 'MitreId.php';

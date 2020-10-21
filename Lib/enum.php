@@ -1,7 +1,7 @@
 <?php
 
 
-class EntitlementProvisionerDBDriverTypeEnum
+class MitreIdProvisionerDBDriverTypeEnum
 {
     const Mysql     = 'MY';
     const Postgres  = 'PG';
@@ -11,7 +11,7 @@ class EntitlementProvisionerDBDriverTypeEnum
     );
 }
 
-class EntitlementProvisionerDBPortsEnum
+class MitreIdProvisionerDBPortsEnum
 {
   const Mysql     = '3306';
   const Postgres  = '5432';
@@ -21,7 +21,7 @@ class EntitlementProvisionerDBPortsEnum
   );
 }
 
-class EntitlementProvisionerDBEncodingTypeEnum
+class MitreIdProvisionerDBEncodingTypeEnum
 {
     const utf_8      = 'utf8';
     const iso_8859_7 = 'iso_8859_7'; // Latin/ Greek
@@ -40,7 +40,7 @@ class EntitlementProvisionerDBEncodingTypeEnum
     );
 }
 
-class EntitlementProvisionerDateTruncEnum
+class MitreIdProvisionerDateTruncEnum
 {
     const daily     = 'day';
     const weekly    = 'week';
@@ -55,7 +55,7 @@ class EntitlementProvisionerDateTruncEnum
     );
 }
 
-class EntitlementProvisionerDateEnum
+class MitreIdProvisionerDateEnum
 {
     const daily     = 'daily';
     const weekly    = 'weekly';
@@ -67,4 +67,40 @@ class EntitlementProvisionerDateEnum
         'monthly'   => 'monthly',
         'yearly'    => 'yearly',
     );
+}
+
+class MitreIdProvisionerIdentifierEnum
+{
+  const Badge              = 'badge';
+  const Enterprise         = 'enterprise';
+  const ePPN               = 'eppn';
+  const ePTID              = 'eptid';
+  const ePUID              = 'epuid';
+  const Mail               = 'mail';
+  const National           = 'national';
+  const Network            = 'network';
+  const OpenID             = 'openid';
+  const ORCID              = 'orcid';
+  const ProvisioningTarget = 'provisioningtarget';
+  const Reference          = 'reference';
+  const SORID              = 'sorid';
+  const UID                = 'uid';
+
+  const type = array(
+    MitreIdProvisionerIdentifierEnum::Badge => 'badge',
+    MitreIdProvisionerIdentifierEnum::Enterprise => 'enterprise',
+    MitreIdProvisionerIdentifierEnum::ePPN => 'eppn',
+    MitreIdProvisionerIdentifierEnum::ePTID => 'eptid',
+    MitreIdProvisionerIdentifierEnum::ePUID => 'epuid',
+    MitreIdProvisionerIdentifierEnum::Mail => 'mail',
+    MitreIdProvisionerIdentifierEnum::National => 'national',
+    MitreIdProvisionerIdentifierEnum::Network => 'network',
+    MitreIdProvisionerIdentifierEnum::OpenID => 'openid',
+    MitreIdProvisionerIdentifierEnum::ORCID => ' orcid',
+    MitreIdProvisionerIdentifierEnum::ProvisioningTarget => 'provisioningtarget',
+    MitreIdProvisionerIdentifierEnum::Reference => 'reference',
+    MitreIdProvisionerIdentifierEnum::SORID => 'sorid',
+    MitreIdProvisionerIdentifierEnum::UID => 'uid'
+  );
+
 }

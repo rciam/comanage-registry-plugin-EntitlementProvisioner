@@ -25,7 +25,7 @@
   must be specified in raw SQL, which needs the prefixed table name.
 -->
 <schema version="0.3">
-    <table name="co_entitlement_provisioner_targets">
+    <table name="co_mitre_id_provisioner_targets">
     <field name="id" type="I">
       <key />
       <autoincrement />
@@ -47,12 +47,14 @@
     <field name="urn_namespace" type="C" size="128" />
     <field name="urn_authority" type="C" size="128" />
     <field name="urn_legacy" type="C" size="128" />
+    <field name="enable_vo_whitelist" type="L" />
     <field name="vo_whitelist" type="X" size="4000" />
     <field name="vo_group_prefix" type="C" size="128" />
     <field name="entitlement_format" type="C" size="256" />
+    <field name="identifier_type" type="C" size="128" />
     <field name="created" type="T" />
     <field name="modified" type="T" />
-    <index name="co_entitlement_provisioner_targets_i1">
+    <index name="co_mitre_id_provisioner_targets_i1">
       <col>co_provisioning_target_id</col>
       <unique />
     </index>

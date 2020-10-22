@@ -342,10 +342,12 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
         $Cou = ClassRegistry::init('Cou');
         $data['cou'] = $Cou->query('SELECT name as group_name, id as cou_id FROM cm_cous WHERE cou_id=' . $data['new_cou']['cou_id'] . '  AND revision = (SELECT MAX(revision) FROM cm_cous c2 WHERE c2.cou_id=' . $data['new_cou']['cou_id'] . ');')[0][0];//we need the previous name
         $data['new_cou']['group_name'] = $_REQUEST['data']['Cou']['name'];
-        
+        $data['rename_cou'] = TRUE;
         if($data['new_cou']['group_name']  != $data['cou']['group_name']) {
-          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [Cou] Rename Cou with id:' . $data['new_cou']['cou_id'], LOG_DEBUG);
-          $data['rename_cou'] = TRUE;
+          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [Cou] Rename Cou with id:' . $data['new_cou']['cou_id'], LOG_DEBUG);    
+        }
+        else { // parent_id changed -> see checkWriteFollowups at CousController
+          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [Cou] Parent Changed for  Cou with id:' . $data['new_cou']['cou_id'], LOG_DEBUG);
         }
       }
       else if(strpos(array_keys($_REQUEST)[0],'/cous/delete')!==FALSE) { //delete co group 
@@ -469,9 +471,10 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
 
       else if(!empty($data['rename_cou'])) { //cou Renamed
         // Rename All Entitlements For this Cou
-        $paths= SyncEntitlements::getCouTreeStructureStatic(array($data['cou'], $data['new_cou']));     
-        $new_group = ((empty($path) || empty($path[1])) ? urlencode($data['new_cou']['group_name']) : $paths[1][$data['new_cou']['cou_id']]['path']);
-        $old_group = ((empty($path) || empty($path[0])) ? urlencode($data['cou']['group_name']) : $paths[0][$data['cou']['cou_id']]['path']);        
+        $paths= SyncEntitlements::getCouTreeStructureStatic(array($data['cou']));     
+        $old_group = ((empty($paths) || empty($paths[0])) ? urlencode($data['cou']['group_name']) : $paths[0][$data['cou']['cou_id']]['path']);                
+        $paths= SyncEntitlements::getCouTreeStructureStatic(array($data['new_cou']));     
+        $new_group = ((empty($paths) || empty($paths[0])) ? urlencode($data['new_cou']['group_name']) : $paths[0][$data['new_cou']['cou_id']]['path']);
         MitreId::renameEntitlementsByCou($mitre_id, $old_group , $new_group, $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_namespace'], 
                                           $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_legacy'], 
                                           $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_authority']);

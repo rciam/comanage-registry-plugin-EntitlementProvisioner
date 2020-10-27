@@ -471,9 +471,9 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
 
       else if(!empty($data['rename_cou'])) { //cou Renamed
         // Rename All Entitlements For this Cou
-        $paths= SyncEntitlements::getCouTreeStructureStatic(array($data['cou']));     
+        $paths= SyncEntitlements::getCouTreeStructure(array($data['cou']));     
         $old_group = ((empty($paths) || empty($paths[0])) ? urlencode($data['cou']['group_name']) : $paths[0][$data['cou']['cou_id']]['path']);                
-        $paths= SyncEntitlements::getCouTreeStructureStatic(array($data['new_cou']));     
+        $paths= SyncEntitlements::getCouTreeStructure(array($data['new_cou']));     
         $new_group = ((empty($paths) || empty($paths[0])) ? urlencode($data['new_cou']['group_name']) : $paths[0][$data['new_cou']['cou_id']]['path']);
         MitreId::renameEntitlementsByCou($mitre_id, $old_group , $new_group, $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_namespace'], 
                                           $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_legacy'], 

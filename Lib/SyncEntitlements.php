@@ -58,7 +58,7 @@ class SyncEntitlements{
       return;
     }
     foreach($memberships_groups as $group) {
-      CakeLog::write('debug', __METHOD__ . "::groupEntitlementAssemble => " . var_export($group, true), LOG_DEBUG);
+      //CakeLog::write('debug', __METHOD__ . "::groupEntitlementAssemble => " . var_export($group, true), LOG_DEBUG);
       $roles = array();
       if($group['member'] === true) {
         $roles[] = "member";
@@ -94,46 +94,7 @@ class SyncEntitlements{
    * @param array $cous
    */
 
-  private function getCouTreeStructure($cous) {
-    
-    foreach($cous as $cou) {
-      
-      if(empty($cou['group_name']) || empty($cou['cou_id'])) {
-        continue;
-      }
-
-      $nested_cous_paths = array(); //local array
-      $recursive_query = QueryConstructor::getRecursiveQuery($cou['cou_id']);
-      $CoGroup = ClassRegistry::init('CoGroup');
-      $result = $CoGroup->query($recursive_query);
-
-      foreach($result as $row) {
-         // especially for comanage
-        $row = $row[0];
-        /// If ':' does exist
-        if(strpos($row['path'], ':') !== false) {
-          $path_group_list = explode(':', $row['path']);
-          $path_group_list = array_map(function($group){
-            return urlencode($group);
-          }, $path_group_list);
-
-          $this->nested_cous_paths += [
-            $cou['cou_id'] => [
-              'path'           => implode(':', $path_group_list),
-              'path_id_list'   => explode(':', $row['path_id']),
-              'path_full_list' => array_combine(
-                explode(':', $row['path_id']), // keys
-                $path_group_list     // values
-              ),
-            ],
-          ];
-        }
-      }
-    }
-    CakeLog::write('debug', __METHOD__ . "::getCouTreeStructure: nested_cous_paths => " . var_export($this->nested_cous_paths, true), LOG_DEBUG);
-  }
-
-  public static function getCouTreeStructureStatic($cous) {
+  public static function getCouTreeStructure($cous) {
     $nested_cous_paths = array(); //local array
     foreach($cous as $cou) {
       
@@ -156,7 +117,7 @@ class SyncEntitlements{
             return urlencode($group);
           }, $path_group_list);
 
-          $nested_cous_paths[] = [
+          $nested_cous_paths += [
             $cou['cou_id'] => [
               'path'           => implode(':', $path_group_list),
               'path_id_list'   => explode(':', $row['path_id']),
@@ -170,7 +131,7 @@ class SyncEntitlements{
       }
     }
     return $nested_cous_paths;
-    CakeLog::write('debug', __METHOD__ . "::getCouTreeStructure: nested_cous_paths => " . var_export($this->nested_cous_paths, true), LOG_DEBUG);
+    
   }
 
       /**
@@ -270,7 +231,7 @@ class SyncEntitlements{
     private function constructOrphanCouAdminEntitlements($orphan_memberships, $cou_tree_structure) {
       // XXX Add all orphan admins COU groups in the state
       foreach ($orphan_memberships as $membership) {
-          CakeLog::write('debug', __METHOD__ . "::membeship: orphan_memberships => " . var_export($membership, true), LOG_DEBUG);
+         //CakeLog::write('debug', __METHOD__ . "::membeship: orphan_memberships => " . var_export($membership, true), LOG_DEBUG);
           if ($membership['member'] || $membership['owner']) {
               $membership_roles = [];
               if ($membership['member']) {
@@ -307,9 +268,9 @@ class SyncEntitlements{
      */
     private function mergeEntitlements($orphan_memberships, $coGroupMemberships)
     {
-      CakeLog::write('debug', __METHOD__ . "::mergeEntitlements: members_entitlements => " . var_export($this->members_entitlements, true), LOG_DEBUG);
-      CakeLog::write('debug', __METHOD__ . "::mergeEntitlements: cou_tree_structure => " . var_export($this->nested_cous_paths, true), LOG_DEBUG);
-      CakeLog::write('debug', __METHOD__ . "::mergeEntitlements: orphan_memberships => " . var_export($orphan_memberships, true), LOG_DEBUG);
+      //CakeLog::write('debug', __METHOD__ . "::mergeEntitlements: members_entitlements => " . var_export($this->members_entitlements, true), LOG_DEBUG);
+      //CakeLog::write('debug', __METHOD__ . "::mergeEntitlements: cou_tree_structure => " . var_export($this->nested_cous_paths, true), LOG_DEBUG);
+      //CakeLog::write('debug', __METHOD__ . "::mergeEntitlements: orphan_memberships => " . var_export($orphan_memberships, true), LOG_DEBUG);
 
       if (empty($this->nested_cous_paths)) {
           // XXX Add remaining orphans and exit
@@ -325,11 +286,11 @@ class SyncEntitlements{
           $filtered_cou_ids[] = $node['path_id_list'];
       }
       $filtered_cou_ids = array_values(array_unique(array_merge(...$filtered_cou_ids)));
-      CakeLog::write('debug', __METHOD__ . "::mergeEntitlements: filtered_cou_ids => " . var_export($filtered_cou_ids, true), LOG_DEBUG);
+      //CakeLog::write('debug', __METHOD__ . "::mergeEntitlements: filtered_cou_ids => " . var_export($filtered_cou_ids, true), LOG_DEBUG);
 
       // XXX Get the COU ids that also have an admin role
       $filtered_admin_cou_ids = !empty($this->members_entitlements['admins']) ? array_keys($this->members_entitlements['admins']) : array();
-      CakeLog::write('debug', __METHOD__ . "::mergeEntitlements: filtered_admin_cou_ids => " . var_export($filtered_admin_cou_ids, true), LOG_DEBUG);
+      //CakeLog::write('debug', __METHOD__ . "::mergeEntitlements: filtered_admin_cou_ids => " . var_export($filtered_admin_cou_ids, true), LOG_DEBUG);
 
       $filtered_entitlements = array_filter(
           $this->members_entitlements,
@@ -342,7 +303,7 @@ class SyncEntitlements{
           ARRAY_FILTER_USE_KEY
       );
       
-      CakeLog::write('debug', __METHOD__ . "::mergeEntitlements: filtered_entitlements => " . var_export($filtered_entitlements, true), LOG_DEBUG);
+      //CakeLog::write('debug', __METHOD__ . "::mergeEntitlements: filtered_entitlements => " . var_export($filtered_entitlements, true), LOG_DEBUG);
 
       // XXX Create the list of all potential groups
       $allowed_cou_ids = array_keys($filtered_entitlements);
@@ -364,7 +325,7 @@ class SyncEntitlements{
           }
       }
 
-      CakeLog::write('debug', __METHOD__ . "::mergeEntitlements: list_of_candidate_full_nested_groups => " . var_export($list_of_candidate_full_nested_groups, true), LOG_DEBUG);
+      //CakeLog::write('debug', __METHOD__ . "::mergeEntitlements: list_of_candidate_full_nested_groups => " . var_export($list_of_candidate_full_nested_groups, true), LOG_DEBUG);
 
       // XXX Filter the ones that are subgroups from another
       if ($this->config['merge_entitlements']) {
@@ -489,17 +450,20 @@ class SyncEntitlements{
     // XXX Extract the group memberships
     $group_memberships = Hash::extract($coGroupMemberships, '{n}.{n}[cou_id=/^$/]');
 
-    CakeLog::write('debug', __METHOD__ . "::group_memberships => " . var_export($group_memberships, true), LOG_DEBUG);
+    //CakeLog::write('debug', __METHOD__ . "::group_memberships => " . var_export($group_memberships, true), LOG_DEBUG);
 
     $cou_memberships = Hash::extract($coGroupMemberships, '{n}.{n}[cou_id>0]');
 
-    CakeLog::write('debug', __METHOD__ . "::cou_memberships => " . var_export($cou_memberships, true), LOG_DEBUG);
+    //CakeLog::write('debug', __METHOD__ . "::cou_memberships => " . var_export($cou_memberships, true), LOG_DEBUG);
 
     // XXX Construct the plain group Entitlements
     $this->groupEntitlementAssemble($group_memberships);
 
+    CakeLog::write('debug', __METHOD__ . "::nested_cous => " . var_export($this->nested_cous_paths, true), LOG_DEBUG);
     // XXX Get the Nested COUs for the user
-    $this->getCouTreeStructure($cou_memberships);
+    $this->nested_cous_paths = SyncEntitlements::getCouTreeStructure($cou_memberships);
+    //$this->getCouTreeStructure($cou_memberships);
+    CakeLog::write('debug', __METHOD__ . "::nested_cous after => " . var_export($this->nested_cous_paths, true), LOG_DEBUG);
 
     // Define the array that will hold the member entitlements
     $this->members_entitlements = [];
@@ -537,7 +501,7 @@ class SyncEntitlements{
 
     $voName = $cou['group_name'];
     
-    CakeLog::write('debug', __METHOD__ . "::voName => " . var_export($voName, true), LOG_DEBUG);
+    //CakeLog::write('debug', __METHOD__ . "::voName => " . var_export($voName, true), LOG_DEBUG);
 
     // Assemble the roles
     // If there is nothing to assemble then keep the default ones
@@ -592,7 +556,7 @@ class SyncEntitlements{
     $vo_roles['cou_id'] = $cou['cou_id'];
     // todo: Move upper to voRoles Create function
 
-    CakeLog::write('debug', __METHOD__ . "::retrieveCOPersonData voRoles[{$voName}] => " . var_export($vo_roles, true), LOG_DEBUG);
+    //CakeLog::write('debug', __METHOD__ . "::retrieveCOPersonData voRoles[{$voName}] => " . var_export($vo_roles, true), LOG_DEBUG);
 
     $this->couEntitlementAssemble($vo_roles, $voName, "");
     // XXX Remove the ones already done

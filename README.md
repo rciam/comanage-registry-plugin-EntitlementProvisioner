@@ -32,9 +32,6 @@ After the installation, you have to configure the plugin before using it.
   * `entitlementFormat`: Required, defines the format of entitlements to be removed from other systems.
   * `identifierType`: Required, the type of the user identifier.
 
-
-
-
 ## License
 
 Licensed under the Apache 2.0 license, for details see [LICENSE](https://github.com/rciam/comanage-registry-plugin-MitreIdProvisioner/blob/master/LICENSE).

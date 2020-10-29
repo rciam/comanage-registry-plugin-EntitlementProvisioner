@@ -88,7 +88,7 @@ class MitreId
     $entitlement_regex = '^' . $urn_namespace . ":group:" . str_replace('+','\+', $cou_name) . $group . ":(.*)#" . $urn_authority;
 
     if($urn_legacy) {
-      $entitlement_regex = '('. $entitlement_regex . ') | (^'.$urn_namespace . ":group:" . str_replace('+','\+', $cou_name) .'#'. $urn_authority . ')';
+      $entitlement_regex = '('. $entitlement_regex . ')|(^'.$urn_namespace . ":group:" . str_replace('+','\+', $cou_name) .'#'. $urn_authority . ')';
     }
     $query = 'DELETE FROM user_edu_person_entitlement'
     . ' WHERE edu_person_entitlement ~  \''. $entitlement_regex .'\' AND edu_person_entitlement ~ \'' .$regex. '\'';
@@ -116,7 +116,7 @@ class MitreId
     
     $entitlement_regex = '^'.$urn_namespace.':group:'.$vo_group_prefix.':'. str_replace('+','\+', urlencode($group_name)) .'(.*)'; 
     if($urn_legacy) {
-      $entitlement_regex = '('. $entitlement_regex . ') | (^'.$urn_namespace.':'.$urn_authority.':(.*)@'.urlencode($group_name).')';
+      $entitlement_regex = '('. $entitlement_regex . ')|(^'.$urn_namespace.':'.$urn_authority.':(.*)@'.urlencode($group_name).')';
     }
     $query = 'DELETE FROM user_edu_person_entitlement'
     . ' WHERE edu_person_entitlement ~  \''. $entitlement_regex .'\' AND edu_person_entitlement ~ \'' .$regex. '\'';
@@ -148,7 +148,7 @@ class MitreId
     }
     $entitlement_regex = '^' . $urn_namespace . ':group:' . $vo_group_prefix . ':' . str_replace('+','\+', urlencode($old_group_name)) . '(.*)';
     if($urn_legacy) {
-      $entitlement_regex = '(' . $entitlement_regex . ') | (^' . $urn_namespace . ':' . $urn_authority . ':(.*)@' . str_replace('+','\+', urlencode($old_group_name)) . ')';
+      $entitlement_regex = '(' . $entitlement_regex . ')|(^' . $urn_namespace . ':' . $urn_authority . ':(.*)@' . str_replace('+','\+', urlencode($old_group_name)) . ')';
     }
     $query = 'UPDATE user_edu_person_entitlement SET edu_person_entitlement = REPLACE(edu_person_entitlement, \'' . urlencode($old_group_name) . '\',\'' . urlencode($new_group_name) . '\')'
     . ' WHERE edu_person_entitlement ~  \'' . $entitlement_regex . '\' AND edu_person_entitlement ~ \'' . $regex . '\'';
@@ -181,7 +181,7 @@ class MitreId
     $entitlement_regex = '^' . $urn_namespace . ":group:" . str_replace('+','\+', $old_cou_name) . $group . ":(.*)#" . $urn_authority;
 
     if($urn_legacy) {
-      $entitlement_regex = '('. $entitlement_regex . ') | (^'.$urn_namespace . ":group:" . str_replace('+','\+', $old_cou_name) .'#'. $urn_authority . ')';
+      $entitlement_regex = '('. $entitlement_regex . ')|(^'.$urn_namespace . ":group:" . str_replace('+','\+', $old_cou_name) .'#'. $urn_authority . ')';
     }
     $query = 'UPDATE user_edu_person_entitlement SET edu_person_entitlement = REPLACE(edu_person_entitlement, \''. $old_cou_name .'\',\''. $new_cou_name .'\') '
     . 'WHERE edu_person_entitlement ~  \''. $entitlement_regex .'\' AND edu_person_entitlement ~ \'' .$regex. '\'';

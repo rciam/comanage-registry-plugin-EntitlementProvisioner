@@ -37,6 +37,14 @@ $cm_mitre_id_provisioner_texts['en_US'] = array(
   'ct.mitre_id_provisioner.pl'         => 'MitreId Provisioner',
   'ct.co_mitre_id_provisioner_targets.1' => 'MitreId Provisioner Target',
   
+  'fd.server'                          => 'Server',
+  'fd.server.url'                      => 'Server URL',
+  'fd.server.username'                 => 'Username',
+  'fd.server.port'                     => 'Port',
+  'fd.server.persistent'               => 'Persistent',
+  'fd.server.encoding'                 => 'Encoding',
+  'fd.server.test_connection'          => 'Test Connection',
+
   // Plugin texts
   'pl.mitre_id_provisioner.hostname'         => 'Hostname',
   'pl.mitre_id_provisioner.type'             => 'Type',
@@ -62,5 +70,12 @@ $cm_mitre_id_provisioner_texts['en_US'] = array(
   'pl.mitre_id_provisioner.identifier_type'         => 'Identifier Type',
   'pl.mitre_id_provisioner.identifier_type.desc'    => 'Define the User\'s Identifier Type',
   'pl.mitre_id_provisioner.enable.vowhitelist'      => 'Enable Vo Whitelist',
-  'pl.mitre_id_provisioner.enable.vowhitelist.desc' => 'Define if Vo Whitelist is enabled'
+  'pl.mitre_id_provisioner.enable.vowhitelist.desc' => 'Define if Vo Whitelist is enabled',
+
+  //Database
+  'er.mitre_id_provisioner.db.save'    => 'Save failed',
+  'er.mitre_id_provisioner.db.blackhauled'    => 'Token expired.Please try again.',
+  'er.mitre_id_provisioner.db.connect' => 'Failed to connect to database: %1$s',
+  'er.mitre_id_provisioner.db.action'  => 'Database action failed [PDO Code:%1$s]',
+  'rs.mitre_id_provisioner.db.connect' => 'Database Connect Successful'
 );

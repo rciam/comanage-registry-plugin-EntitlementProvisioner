@@ -157,7 +157,7 @@ class CoMitreIdProvisionerTargetsController extends SPTController {
     if( $this->request->is('ajax')
         && $this->request->is('post') ) {
       if(!empty($this->response->body())) {
-        $this->Flash->set(_txt('er.rciam_stats_viewer.db.blackhauled'), array('key' => 'error'));
+        $this->Flash->set(_txt('er.mitre_id_provisioner.db.blackhauled'), array('key' => 'error'));
         return $this->response;
       }
       $this->layout=null;
@@ -170,7 +170,7 @@ class CoMitreIdProvisionerTargetsController extends SPTController {
         $status = 200;
         $response = array(
           'status' => 'success',
-          'msg'    => _txt('rs.rciam_stats_viewer.db.connect')
+          'msg'    => _txt('rs.mitre_id_provisioner.db.connect')
         );
       } catch (MissingConnectionException $e) {
         // Currently Postgress driver of Cakephp wraps all errors of PDO into MissingConnectionException
@@ -178,7 +178,7 @@ class CoMitreIdProvisionerTargetsController extends SPTController {
         $status = 503;
         $response = array(
           'status' => 'error',
-          'msg'    => _txt('er.rciam_stats_viewer.db.connect', array($e->getMessage()))
+          'msg'    => _txt('er.mitre_id_provisioner.db.connect', array($e->getMessage()))
         );
       }
   

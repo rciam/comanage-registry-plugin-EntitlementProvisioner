@@ -357,7 +357,7 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
         $data['delete_cou'] = TRUE;
         $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [Cou] Delete Cou with id:' . $data['cou']['cou_id'], LOG_DEBUG);
       }
-      else if(strpos(array_keys($_REQUEST)[0],'/co_group_members/')!==FALSE && !empty($data['co_person_id'])) { //co group member action
+      else if(strpos(array_keys($_REQUEST)[0],'/co_group_members')!==FALSE && !empty($data['co_person_id'])) { //co group member action
         $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => [CoGroupMember Action] for user with id:' . $data['co_person_id'], LOG_DEBUG);
       }
       //co_person_roles_json when remove role 

@@ -399,13 +399,17 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
         $data['co_id'] = $provisioningData['Co']['id'];
         $data['co_person_identifier'] = $provisioningData['CoPerson']['actor_identifier'];
         $data['co_person_id'] = $provisioningData['CoPerson']['id'];
-        $data['co_person_identifier'] = Hash::extract($provisioningData['Identifier'], '{n}[type=' . $coProvisioningTargetData['CoMitreIdProvisionerTarget']['identifier_type'] . '].identifier')[0];
+        if(!empty($provisioningData['Identifier'])) {
+          $data['co_person_identifier'] = Hash::extract($provisioningData['Identifier'], '{n}[type=' . $coProvisioningTargetData['CoMitreIdProvisionerTarget']['identifier_type'] . '].identifier')[0];
+        }
         break;
       case ProvisioningActionEnum::CoPersonUpdated:
         $data['co_id'] = $provisioningData['Co']['id'];
         $data['co_person_identifier'] = $provisioningData['CoPerson']['actor_identifier'];
         $data['co_person_id'] = $provisioningData['CoPerson']['id'];
-        $data['co_person_identifier'] = Hash::extract($provisioningData['Identifier'], '{n}[type=' . $coProvisioningTargetData['CoMitreIdProvisionerTarget']['identifier_type'] . '].identifier')[0];
+        if(!empty($provisioningData['Identifier'])) {
+          $data['co_person_identifier'] = Hash::extract($provisioningData['Identifier'], '{n}[type=' . $coProvisioningTargetData['CoMitreIdProvisionerTarget']['identifier_type'] . '].identifier')[0];
+        }     
         break;
       case ProvisioningActionEnum::CoPersonExpired:
         break;

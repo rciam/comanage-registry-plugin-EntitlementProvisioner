@@ -453,7 +453,7 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
 
       $datasource = $this->connect($connect_id, array(), $coProvisioningTargetData);
       $mitre_id = ClassRegistry::init('MitreIdUsers');
-      MitreId::config($mitre_id, $datasource, 'user_info', $coProvisioningTargetData['CoMitreIdProvisionerTarget']['entitlement_format']);
+      MitreId::config($mitre_id, $datasource, 'user_info', $coProvisioningTargetData['CoMitreIdProvisionerTarget']);
       if(!empty($data['group_name']) && !empty($data['delete_group'])) { //group Deleted
         // Delete All Entitlements For this Group
         MitreId::deleteEntitlementsByGroup($mitre_id, 
@@ -509,7 +509,7 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
         } 
         //Get User Entitlements From MitreId
         $mitre_id_entitlements = ClassRegistry::init('MitreIdEntitlements');
-        MitreId::config($mitre_id_entitlements, $datasource, 'user_edu_person_entitlement', $coProvisioningTargetData['CoMitreIdProvisionerTarget']['entitlement_format']);
+        MitreId::config($mitre_id_entitlements, $datasource, 'user_edu_person_entitlement', $coProvisioningTargetData['CoMitreIdProvisionerTarget']);
         if(!empty($data['user_deleted'])) {
           MitreId::deleteAllEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id']);  
         }

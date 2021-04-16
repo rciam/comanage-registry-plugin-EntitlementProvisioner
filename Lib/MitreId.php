@@ -16,13 +16,21 @@ class MitreId
    * @param  mixed $mitreId
    * @param  mixed $datasource
    * @param  string $table_name
+   * @param  array $coProvisioningTargetData
    * @return void
    */
-  public static function config($mitreId, $datasource, $table_name, $entitlement_format = NULL)
+  public static function config($mitreId, $datasource, $table_name, $coProvisioningTargetData = NULL)
   {
     $mitreId->useDbConfig = $datasource->configKeyName;
     $mitreId->useTable = $table_name;
-    $mitreId->entitlementFormat = $entitlement_format;
+    if(!is_null($coProvisioningTargetData)) {
+      foreach($coProvisioningTargetData as $key => $value) {
+        if(!in_array($key, array('id', 'deleted', 'created', 'modified', 'co_provisioning_target_id'))) {
+          $key = lcfirst(Inflector::camelize($key));
+          $mitreId->$key = $value;
+        }
+      }
+    }
   }
   
   /**
@@ -48,12 +56,24 @@ class MitreId
    * @return void
    */
   public static function deleteOldEntitlements($mitreId, $user_id, $current_entitlements, $new_entitlements) {
+    $deleteEntitlements_white = array();
+    $deleteEntitlements_format = array();
+
+    // Find the candidate Entitlements
     $deleteEntitlements = array_diff($current_entitlements, $new_entitlements);
-    //Remove only those from check-in
+    //Remove the ones matching the Entitlement Format regex
     if(!empty($mitreId->entitlementFormat)) {
-      $deleteEntitlements  = preg_grep($mitreId->entitlementFormat, $deleteEntitlements);
+      $deleteEntitlements_format  = preg_grep($mitreId->entitlementFormat, $deleteEntitlements);
     }
-    CakeLog::write('debug', __METHOD__ . ':: entitlements to be deleted from MitreId' . var_export($deleteEntitlements, true), LOG_DEBUG);
+    // Remove the ones constructed from the VO Whitelist
+    if($mitreId->entitlementFormatIncludeVowht
+       && !empty($mitreId->voWhitelist)) {
+      $whitelist_regex  = "/(" . str_replace(",", "|", $mitreId->voWhitelist) . ")/i";
+      $deleteEntitlements_white  = preg_grep($whitelist_regex, $deleteEntitlements);
+    }
+    // Calculate the final list of entitlements to be deleted
+    $deleteEntitlements = array_merge($deleteEntitlements_white, $deleteEntitlements_format);
+    CakeLog::write('debug', __METHOD__ . ':: entitlements to be deleted from MitreId: ' . var_export($deleteEntitlements, true), LOG_DEBUG);
     if(!empty($deleteEntitlements)) {
       //Delete
       $deleteEntitlementsParam = '(\'' . implode("','", $deleteEntitlements) . '\')';
@@ -76,10 +96,10 @@ class MitreId
    * @return void
    */
   public static function deleteEntitlementsByCou($mitreId, $cou_name,  $urn_namespace, $urn_legacy, $urn_authority) {
-    if(strpos($mitreId->entitlementFormat,"/") == 0) {
+    if(!empty($mitreId->entitlementFormat)
+       && strpos($mitreId->entitlementFormat,"/") == 0) {
       $regex = explode('/', $mitreId->entitlementFormat)[1];
-    }
-    else {
+    } else {
       $regex = $mitreId->entitlementFormat;
     }
     
@@ -109,10 +129,12 @@ class MitreId
    * @return void
    */
   public static function deleteEntitlementsByGroup($mitreId, $group_name, $urn_namespace, $urn_legacy, $urn_authority, $vo_group_prefix) {
-    if(strpos($mitreId->entitlementFormat,"/") === 0)
+    if(!empty($mitreId->entitlementFormat)
+       && strpos($mitreId->entitlementFormat,"/") === 0) {
       $regex = explode('/', $mitreId->entitlementFormat)[1];
-    else
+    } else {
       $regex = $mitreId->entitlementFormat;
+    }
     
     $entitlement_regex = '^'.$urn_namespace.':group:'.$vo_group_prefix.':'. str_replace('+','\+', urlencode($group_name)) .'(.*)'; 
     if($urn_legacy) {

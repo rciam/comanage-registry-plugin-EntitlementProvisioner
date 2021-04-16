@@ -2,7 +2,7 @@
 App::uses('CoProvisionerPluginTarget', 'Model');
 App::uses('CakeLog', 'Log');
 
-class SyncEntitlements{
+class SyncEntitlements {
   public  $state = array();
   public  $config = null;
   public  $nested_cous_paths;
@@ -459,11 +459,9 @@ class SyncEntitlements{
     // XXX Construct the plain group Entitlements
     $this->groupEntitlementAssemble($group_memberships);
 
-    CakeLog::write('debug', __METHOD__ . "::nested_cous => " . var_export($this->nested_cous_paths, true), LOG_DEBUG);
+    // CakeLog::write('debug', __METHOD__ . "::nested_cous => " . var_export($this->nested_cous_paths, true), LOG_DEBUG);
     // XXX Get the Nested COUs for the user
     $this->nested_cous_paths = SyncEntitlements::getCouTreeStructure($cou_memberships);
-    //$this->getCouTreeStructure($cou_memberships);
-    CakeLog::write('debug', __METHOD__ . "::nested_cous after => " . var_export($this->nested_cous_paths, true), LOG_DEBUG);
 
     // Define the array that will hold the member entitlements
     $this->members_entitlements = [];
@@ -541,8 +539,6 @@ class SyncEntitlements{
             }
         )
     );
-    if(!empty($cou_admins_group))
-      CakeLog::write('debug', __METHOD__ . "::cou_admins_group => " .  var_export($cou_admins_group, true), LOG_DEBUG);
 
     // Handle as a role the membership and ownership of admins group
     if (!empty($cou_admins_group[0]['member']) && filter_var($cou_admins_group[0]['member'], FILTER_VALIDATE_BOOLEAN)) {
@@ -562,12 +558,9 @@ class SyncEntitlements{
     // XXX Remove the ones already done
     unset($cou_memberships[$idx]);
     }
-      // Fix nested COUs entitlements
-      $this->mergeEntitlements($cou_memberships, $coGroupMemberships);
+    // Fix nested COUs entitlements
+    $this->mergeEntitlements($cou_memberships, $coGroupMemberships);
 
-      if (!empty($this->state['Attributes']['eduPersonEntitlement'])) {
-          CakeLog::write('debug', __METHOD__ . "::retrieveCOPersonData AFTER: eduPersonEntitlement= => " . var_export($this->state['Attributes']['eduPersonEntitlement'], true), LOG_DEBUG);
-      }
 
     return $this->state['Attributes']['eduPersonEntitlement'];
   }

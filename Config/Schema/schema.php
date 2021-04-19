@@ -45,6 +45,7 @@ class AppSchema extends CakeSchema {
     'vo_group_prefix' => array('type' => 'string', 'null' => true, 'default' => null, 'length' => 4000),
     'entitlement_format' => array('type' => 'text', 'null' => true, 'default' => null, 'length' => 4000),
     'entitlement_format_include_vowht' => array('type' => 'boolean', 'null' => true, 'default' => null),
+    'rciam_external_entitlements' => array('type' => 'boolean', 'null' => true, 'default' => null),
     'identifier_type' => array('type' => 'string', 'null' => true, 'default' => null, 'length' => 128),
     'created' => array('type' => 'datetime', 'null' => true, 'default' => null),
     'modified' => array('type' => 'datetime', 'null' => true, 'default' => null),

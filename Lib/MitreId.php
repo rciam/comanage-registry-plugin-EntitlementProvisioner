@@ -19,10 +19,11 @@ class MitreId
    * @param  array $coProvisioningTargetData
    * @return void
    */
-  public static function config($mitreId, $datasource, $table_name, $coProvisioningTargetData = NULL)
+  public static function config($mitreId, $datasource, $table_name, $coProvisioningTargetData = NULL, $user_profile = NULL)
   {
     $mitreId->useDbConfig = $datasource->configKeyName;
     $mitreId->useTable = $table_name;
+    $mitreId->userProfile = $user_profile;
     if(!is_null($coProvisioningTargetData)) {
       foreach($coProvisioningTargetData as $key => $value) {
         if(!in_array($key, array('id', 'deleted', 'created', 'modified', 'co_provisioning_target_id'))) {
@@ -80,6 +81,11 @@ class MitreId
       $mitreId->query('DELETE FROM user_edu_person_entitlement'
         . ' WHERE user_id=' . $user_id
         . ' AND edu_person_entitlement IN ' . $deleteEntitlementsParam);
+
+      if($mitreId->rciamExternalEntitlements) {
+        // Import the ones from third parties
+        MitreId::insertRciamSyncVomsEntitlements($mitreId, $user_id);
+      }
     }
   }
   
@@ -115,6 +121,11 @@ class MitreId
 
     CakeLog::write('debug', __METHOD__ . ':: delete entitlements by cou: ' . $query, LOG_DEBUG);
     $mitreId->query($query);
+
+    if($mitreId->rciamExternalEntitlements) {
+      // Import the ones from third parties
+      MitreId::insertRciamSyncVomsEntitlements($mitreId, $user_id);
+    }
   }
    
   /**
@@ -246,5 +257,73 @@ class MitreId
       }
       $mitreId->query('INSERT INTO user_edu_person_entitlement (user_id, edu_person_entitlement) VALUES ' . substr($insertEntitlementsParam, 0, -1));
     }
+    if($mitreId->rciamExternalEntitlements) {
+      // Import the ones from third parties
+      MitreId::insertRciamSyncVomsEntitlements($mitreId, $user_id);
+    }
   }
+
+  /**
+   * @param $mitreId
+   * @param $mitre_user_id
+   */
+  public static function insertRciamSyncVomsEntitlements($mitreId, $mitre_user_id)
+  {
+    // Fetch users Certificates
+    if(empty($mitreId->userProfile['Cert'])) {
+      return;
+    }
+    // Link to my table
+    $mdl_name = Inflector::camelize(MitreIdProvisionerRciamSyncVomsCfg::TableName);
+    // XXX Since this table uses the useDbConfig = "default" i can not use
+    // CAKEPHP's embeded PDO because it will always add the prefix cm_
+    $RciamModel = ClassRegistry::init($mdl_name);
+    // Get configuration
+    $vo_roles = !empty($mitreId->voRoles) ? explode(",", $mitreId->voRoles) : array();
+
+    $entitlements = array();
+    $user_id_entries = Hash::extract($mitreId->userProfile['Cert'], '{n}.Cert.subject');
+    // Construct the entitlements
+    foreach ($user_id_entries as $userId) {
+      $blacklist = '(\'' . implode("','", MitreIdProvisionerRciamSyncVomsCfg::VoBlackList) . '\')';
+      $vo_query =
+        "select t.vo_id"
+        . " from public.voms_members t"
+        . " where t.subject='" . $userId . "'"
+        . " and t.vo_id IS NOT NULL"
+        . " and t.vo_id NOT IN " . $blacklist;
+      $vos = $RciamModel->query($vo_query);
+      // Remove the unnecessary levels
+      $vo_names = Hash::extract($vos, '{n}.{n}.vo_id');
+      foreach($vo_names as $name) {
+        foreach ($vo_roles as $role) {
+          $entitlement =
+            $mitreId->urnNamespace                 // URN namespace
+            . ":group:" . urlencode($name) . ":"   // VO
+            . "role=" . $role                      // role
+            . "#" . $mitreId->urnAuthority;        // AA FQDN TODO
+          $entitlements[] = $entitlement;
+        }
+      }
+    }
+
+    // Push the entitlements
+    if (count($entitlements) > 0) {
+      $insertEntitlementsParam = '';
+      foreach ($entitlements as $ent_insert) {
+        $insertEntitlementsParam .= '(' . $mitre_user_id . ',\'' . $ent_insert . '\'),';
+      }
+      if(!empty($insertEntitlementsParam)) {
+        $insert_query =
+          'INSERT INTO user_edu_person_entitlement (user_id, edu_person_entitlement) VALUES '
+          . substr($insertEntitlementsParam, 0, -1)
+          . ' ON CONFLICT ON CONSTRAINT user_id_eduperson_entitlement_unique DO NOTHING';
+        // Push everything into the database
+        CakeLog::write('debug', __METHOD__ . ':: Insert third party entitlements: ' . $insert_query, LOG_DEBUG);
+        $mitreId->query($insert_query);
+      }
+    }
+
+  }
+
 }

@@ -39,10 +39,13 @@ class MitreId
    *
    * @param  mixed $mitreId
    * @param  integer $user_id
-   * @return void
+   * @return array
    */
   public static function getCurrentEntitlements($mitreId, $user_id) {
     $current_entitlements = $mitreId->find('all', array('conditions' => array('MitreIdEntitlements.user_id' => $user_id)));
+    if(empty($current_entitlements)) {
+        return array();
+    }
     $current_entitlements = Hash::extract($current_entitlements, '{n}.MitreIdEntitlements.edu_person_entitlement');
     return $current_entitlements;
   }
@@ -62,6 +65,10 @@ class MitreId
 
     // Find the candidate Entitlements
     $deleteEntitlements = array_diff($current_entitlements, $new_entitlements);
+    // There is nothing to delete
+    if(empty($deleteEntitlements)) {
+        return;
+    }
     //Remove the ones matching the Entitlement Format regex
     if(!empty($mitreId->entitlementFormat)) {
       $deleteEntitlements_format  = preg_grep($mitreId->entitlementFormat, $deleteEntitlements);
@@ -69,12 +76,16 @@ class MitreId
     // Remove the ones constructed from the VO Whitelist
     if($mitreId->entitlementFormatIncludeVowht
        && !empty($mitreId->voWhitelist)) {
-      $whitelist_regex  = "/(" . str_replace(",", "|", $mitreId->voWhitelist) . ")/i";
-      $deleteEntitlements_white  = preg_grep($whitelist_regex, $deleteEntitlements);
+        $vowhite_list = explode(",", $mitreId->voWhitelist);
+        foreach ($vowhite_list as $vo_name) {
+            $whitelist_regex = "/" . $mitreId->urnNamespace . ":group:" . $vo_name . ":(.*)#" . $mitreId->urnAuthority . "/i";
+            $deleteEntitlements_tmp  = preg_grep($whitelist_regex, $deleteEntitlements);
+            $deleteEntitlements_white = array_merge($deleteEntitlements_white, $deleteEntitlements_tmp);
+        }
     }
     // Calculate the final list of entitlements to be deleted
     $deleteEntitlements = array_merge($deleteEntitlements_white, $deleteEntitlements_format);
-    CakeLog::write('debug', __METHOD__ . ':: entitlements to be deleted from MitreId: ' . var_export($deleteEntitlements, true), LOG_DEBUG);
+    CakeLog::write('debug', __METHOD__ . ':: entitlements to be deleted from MitreId: ' . print_r($deleteEntitlements, true), LOG_DEBUG);
     if(!empty($deleteEntitlements)) {
       //Delete
       $deleteEntitlementsParam = '(\'' . implode("','", $deleteEntitlements) . '\')';
@@ -248,7 +259,7 @@ class MitreId
    */
   public static function insertNewEntitlements($mitreId, $user_id, $current_entitlements, $new_entitlements) {
     $insertEntitlements = array_diff($new_entitlements, $current_entitlements);
-    CakeLog::write('debug', __METHOD__ . ':: entitlements to be inserted to MitreId' . var_export($insertEntitlements, true), LOG_DEBUG);
+    CakeLog::write('debug', __METHOD__ . ':: entitlements to be inserted to MitreId' . print_r($insertEntitlements, true), LOG_DEBUG);
     if(!empty($insertEntitlements)) {
       //Insert
       $insertEntitlementsParam = '';

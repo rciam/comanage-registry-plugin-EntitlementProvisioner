@@ -458,6 +458,28 @@ $token_key = $this->request->params['_Token']['key'];
             <li>
               <div class="field-name">
                 <div class="field-title">
+                  <?php print _txt('pl.mitre_id_provisioner.enable.rciam_external.short'); ?>
+                </div>
+              </div>
+              <div class="field-info checkbox">
+                <?php
+                if($e) {
+                  $checked = !is_null(filter_var($co_mitre_id_provisioner_targets[0]['CoMitreIdProvisionerTarget']['rciam_external_entitlements'],FILTER_SANITIZE_SPECIAL_CHARS))
+                             ? filter_var($co_mitre_id_provisioner_targets[0]['CoMitreIdProvisionerTarget']['rciam_external_entitlements'], FILTER_VALIDATE_BOOLEAN)
+                             : false;
+                  print $this->Form->checkbox('rciam_external_entitlements', array('checked' => $checked))
+                    . ' '
+                    . $this->Form->label('rciam_external_entitlements', _txt('pl.mitre_id_provisioner.enable.rciam_external'));
+                }
+                else {
+                  print filter_var($co_mitre_id_provisioner_targets[0]['CoMitreIdProvisionerTarget']['rciam_external_entitlements'],FILTER_SANITIZE_SPECIAL_CHARS);
+                }
+                ?>
+              </div>
+            </li>
+            <li>
+              <div class="field-name">
+                <div class="field-title">
                   <?php print ($e ? $this->Form->label('identifier_type', _txt('pl.mitre_id_provisioner.identifier_type')) : _txt('pl.mitre_id_provisioner.identifier_type')); ?><span class="required">*</span>
                 </div>
               </div>

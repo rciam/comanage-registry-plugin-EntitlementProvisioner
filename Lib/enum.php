@@ -102,5 +102,12 @@ class MitreIdProvisionerIdentifierEnum
     MitreIdProvisionerIdentifierEnum::SORID => 'sorid',
     MitreIdProvisionerIdentifierEnum::UID => 'uid'
   );
+}
 
+class MitreIdProvisionerRciamSyncVomsCfg {
+  const VoBlackList = array(
+    'vo.elixir-europe.org'
+  );
+  const UserIdAttribute   = 'distinguishedName';
+  const TableName         = 'voms_members';
 }

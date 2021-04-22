@@ -175,6 +175,12 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
     'enable_vo_whitelist' => array(
       'rule' => array('boolean')
     ),
+    'entitlement_format_include_vowht' => array(
+      'rule' => array('boolean')
+    ),
+    'rciam_external_entitlements' => array(
+      'rule' => array('boolean')
+    ),
     'vo_whitelist' => array(
       'rule' => '/.*/',
       'required' => false,
@@ -278,6 +284,8 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
     }
 
     // Database connection per CO
+    // Since the provisioner might run for multiple events. Drop the datasource and create it again.
+    ConnectionManager::drop('connection_' . $coPersonId);
     $datasource = ConnectionManager::create('connection_' . $coPersonId, $dbconfig);
     return $datasource;
   }
@@ -451,12 +459,15 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
         return;
       }
 
+      // Construct users profile
+      $user_profile = $this->retrieveUserCouRelatedStatus($provisioningData, $coProvisioningTargetData);
+
       $datasource = $this->connect($connect_id, array(), $coProvisioningTargetData);
       $mitre_id = ClassRegistry::init('MitreIdUsers');
-      MitreId::config($mitre_id, $datasource, 'user_info', $coProvisioningTargetData['CoMitreIdProvisionerTarget']);
+      MitreId::config($mitre_id, $datasource, 'user_info', $coProvisioningTargetData['CoMitreIdProvisionerTarget'], $user_profile);
       if(!empty($data['group_name']) && !empty($data['delete_group'])) { //group Deleted
         // Delete All Entitlements For this Group
-        MitreId::deleteEntitlementsByGroup($mitre_id, 
+        MitreId::deleteEntitlementsByGroup($mitre_id,
                                           $data['group_name'], 
                                           $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_namespace'], 
                                           $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_legacy'], 
@@ -479,13 +490,13 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
         $old_group = ((empty($paths) || empty($paths[$data['cou']['cou_id']])) ? urlencode($data['cou']['group_name']) : $paths[$data['cou']['cou_id']]['path']);                
         $paths= SyncEntitlements::getCouTreeStructure(array($data['new_cou']));     
         $new_group = ((empty($paths) || empty($paths[$data['new_cou']['cou_id']])) ? urlencode($data['new_cou']['group_name']) : $paths[$data['new_cou']['cou_id']]['path']);
-        MitreId::renameEntitlementsByCou($mitre_id, $old_group , $new_group, $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_namespace'], 
+        MitreId::renameEntitlementsByCou($mitre_id, $old_group , $new_group, $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_namespace'],
                                           $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_legacy'], 
                                           $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_authority']);
        }
       else if(!empty($data['delete_group'])) { //group Deleted
         // Delete All Entitlements For this Group
-        MitreId::deleteEntitlementsByGroup($mitre_id, $data['group_name'], $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_namespace'], 
+        MitreId::deleteEntitlementsByGroup($mitre_id, $data['group_name'], $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_namespace'],
         $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_legacy'], 
         $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_authority'], 
         SyncEntitlements::get_vo_group_prefix($coProvisioningTargetData['CoMitreIdProvisionerTarget']['vo_group_prefix'], $data['co_id']));
@@ -495,7 +506,7 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
          // Delete All Entitlements For this Cou
          $paths= SyncEntitlements::getCouTreeStructure(array($data['cou']));     
          $cou_name = $paths[$data['cou']['cou_id']]['path'];   
-         MitreId::deleteEntitlementsByCou($mitre_id, $cou_name, $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_namespace'], 
+         MitreId::deleteEntitlementsByCou($mitre_id, $cou_name, $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_namespace'],
                                           $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_legacy'], 
                                           $coProvisioningTargetData['CoMitreIdProvisionerTarget']['urn_authority']);
       }
@@ -509,9 +520,9 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
         } 
         //Get User Entitlements From MitreId
         $mitre_id_entitlements = ClassRegistry::init('MitreIdEntitlements');
-        MitreId::config($mitre_id_entitlements, $datasource, 'user_edu_person_entitlement', $coProvisioningTargetData['CoMitreIdProvisionerTarget']);
+        MitreId::config($mitre_id_entitlements, $datasource, 'user_edu_person_entitlement', $coProvisioningTargetData['CoMitreIdProvisionerTarget'], $user_profile);
         if(!empty($data['user_deleted'])) {
-          MitreId::deleteAllEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id']);  
+          MitreId::deleteAllEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id']);
         }
         else {        
           $current_entitlements = MitreId::getCurrentEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id']);
@@ -524,10 +535,96 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
           //Delete Old Entitlements
           MitreId::deleteOldEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id'], $current_entitlements, $new_entitlements);
           //Insert New Entitlements
-          MitreId::insertNewEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id'],  $current_entitlements, $new_entitlements); 
+          MitreId::insertNewEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id'],  $current_entitlements, $new_entitlements);
         }
         
       }
       ConnectionManager::drop('connection_' . $connect_id);  
+  }
+
+  /**
+   * CO Person profile based on COU and Group ID. The profile is constructed based on OrgIdentities linked to COPerson.
+   *
+   * @param array $provisioningData
+   * @param array $coProvisioningTargetData
+   * @return array
+   */
+  protected function retrieveUserCouRelatedStatus($provisioningData, $coProvisioningTargetData) {
+    $this->log(__METHOD__ . "::@", LOG_DEBUG);
+    $args = array();
+    $args['conditions']['CoProvisioningTarget.id'] = $coProvisioningTargetData["CoMitreIdProvisionerTarget"]["co_provisioning_target_id"];
+    $args['fields'] = array('provision_co_group_id');
+    $args['contain']= false;
+    $provision_group_ret = $this->CoProvisioningTarget->find('first', $args);
+    $co_group_id = $provision_group_ret["CoProvisioningTarget"]["provision_co_group_id"];
+
+    $user_memberships_profile = !is_array($provisioningData['CoGroupMember']) ? array()
+      : Hash::flatten($provisioningData['CoGroupMember']);
+
+    $in_group = array_search($co_group_id, $user_memberships_profile, true);
+
+    if(!empty($in_group)){
+      $index = explode('.', $in_group, 2)[0];
+      $user_membership_status = $provisioningData['CoGroupMember'][$index];
+      // XXX Do not set the cou_id unless you are certain of its value
+      $cou_id = !empty($user_membership_status["CoGroup"]["cou_id"]) ? $user_membership_status["CoGroup"]["cou_id"] : null;
+    }
+
+    // Create the profile of the user according to the group_id and cou_id of the provisioned
+    // resources that we configured
+    // XXX i can not let COmanage treat $cou_id = null as ok since i allow Null COUs. This means that
+    // XXX we will get back the default CO Role, which will be the wrong one.
+    $args = array();
+    $args['conditions']['CoPerson.id'] = $provisioningData["CoPerson"]["id"];
+    if(isset($cou_id)) {
+      $args['contain']['CoPersonRole'] = array(
+        'conditions' => ['CoPersonRole.cou_id' => $cou_id],  // XXX Be carefull with the null COUs
+      );
+    }
+    $args['contain']['CoGroupMember']= array(
+      'conditions' => ['CoGroupMember.co_group_id' => $co_group_id],
+    );
+    $args['contain']['CoGroupMember']['CoGroup'] = array(
+      'conditions' => ['CoGroup.id' => $co_group_id],
+    );
+    // todo: Check if the Cert is linked under OrgIdentity or CO Person
+    $args['contain']['CoOrgIdentityLink']['OrgIdentity'] = array(
+      'Assurance',                                                // Include Assurances
+      'Cert',                                                     // Include any Certificate
+//      'Cert' => array(                                            // Include Certificates
+//        'conditions' => ['Cert.issuer is not null'],
+//      ),
+    );
+
+    // XXX Filter with this $user_profile["CoOrgIdentityLink"][2]["OrgIdentity"]['Cert']
+    // XXX We can not perform any action with VOMS without a Certificate having both a subjectDN and an Issuer
+    // XXX Keep in depth level 1 only the non empty Certificates
+    $user_profile = $this->CoProvisioningTarget->Co->CoPerson->find('first', $args);
+
+    foreach($user_profile["CoOrgIdentityLink"] as $link) {
+      if(!empty($link["OrgIdentity"]['Cert'])) {
+        foreach ($link["OrgIdentity"]['Cert'] as $cert) {
+          $user_profile['Cert'][] = $cert;
+        }
+      }
+    }
+
+    // Fetch the orgidentities linked with the certificates
+    if(!empty($user_profile['Cert'])) {
+      // Extract the Certificate ids
+      // todo: Check if the Model is linked to CO Person, OrgIdentity or Both
+      $cert_ids = Hash::extract($user_profile['Cert'], '{n}.id');
+      $args=array();
+      $args['conditions']['Cert.id'] = $cert_ids;
+      $args['contain'] = array('OrgIdentity');
+      $args['contain']['OrgIdentity'][] = 'TelephoneNumber';
+      $args['contain']['OrgIdentity'][] = 'Address';
+      $args['contain']['OrgIdentity'][] = 'Assurance';
+      $args['contain']['OrgIdentity'][] = 'Identifier';
+      $this->Cert = ClassRegistry::init('Cert');
+      $user_profile['Cert'] = $this->Cert->find('all', $args);
+    }
+
+    return $user_profile;
   }
 }

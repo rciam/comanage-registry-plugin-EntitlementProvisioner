@@ -27,7 +27,8 @@ create table cm_co_mitre_id_provisioner_targets
     created                          timestamp,
     modified                         timestamp,
     deleted                          boolean       default false not null,
-    entitlement_format_include_vowht boolean
+    entitlement_format_include_vowht boolean,
+    rciam_external_entitlements      boolean,
 );
 
 alter table cm_co_mitre_id_provisioner_targets

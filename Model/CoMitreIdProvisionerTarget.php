@@ -438,7 +438,7 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
         return true;
         
       }
-      //$this->log(__METHOD__ . 'Request' . var_export($_REQUEST, true), LOG_DEBUG);   
+      //$this->log(__METHOD__ . 'Request' . print_r($_REQUEST, true), LOG_DEBUG);
        
       $data = $this->checkRequest($op, $provisioningData, $data);
 
@@ -514,7 +514,7 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
         //Get Person by the epuid
         $person = $mitre_id->find('all', array('conditions'=> array('MitreIdUsers.sub' => $data['co_person_identifier'])));
         if(empty($person)) {
-          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => person id not found in mitre' . $data['co_person_id'] . ' and identifier: ' . $data['co_person_identifier'], LOG_DEBUG);            
+          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => person id not found in mitre: ' . $data['co_person_id'] . ' and identifier: ' . $data['co_person_identifier'], LOG_DEBUG);
           ConnectionManager::drop('connection_' . $connect_id);
           return false;
         } 
@@ -526,11 +526,11 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
         }
         else {        
           $current_entitlements = MitreId::getCurrentEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id']);
-          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => current_entitlements from MitreId' . var_export($current_entitlements, true), LOG_DEBUG);           
+          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => current_entitlements from MitreId: ' . print_r($current_entitlements, true), LOG_DEBUG);
           //Get New Entitlements From Comanage
           $syncEntitlements = new SyncEntitlements($coProvisioningTargetData['CoMitreIdProvisionerTarget'],$data['co_id']);
           $new_entitlements = $syncEntitlements->getEntitlements($data['co_person_id']);
-          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => new_entitlements from comanage' . var_export($new_entitlements, true), LOG_DEBUG);           
+          $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => new_entitlements from comanage: ' . print_r($new_entitlements, true), LOG_DEBUG);
     
           //Delete Old Entitlements
           MitreId::deleteOldEntitlements($mitre_id_entitlements, $person[0]['MitreIdUsers']['id'], $current_entitlements, $new_entitlements);

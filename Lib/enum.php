@@ -109,5 +109,5 @@ class MitreIdProvisionerRciamSyncVomsCfg {
     'vo.elixir-europe.org'
   );
   const UserIdAttribute   = 'distinguishedName';
-  const TableName         = 'voms_members';
+  const TableName         = 'cm_voms_members';
 }

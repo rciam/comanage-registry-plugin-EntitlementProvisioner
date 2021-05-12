@@ -299,7 +299,7 @@ class MitreId
       $blacklist = '(\'' . implode("','", MitreIdProvisionerRciamSyncVomsCfg::VoBlackList) . '\')';
       $vo_query =
         "select t.vo_id"
-        . " from " MitreIdProvisionerRciamSyncVomsCfg::TableName . " t"
+        . " from " . MitreIdProvisionerRciamSyncVomsCfg::TableName . " t"
         . " where t.subject='" . $userId . "'"
         . " and t.vo_id IS NOT NULL"
         . " and t.vo_id NOT IN " . $blacklist;

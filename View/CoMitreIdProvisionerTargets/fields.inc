@@ -170,7 +170,7 @@ $token_key = $this->request->params['_Token']['key'];
               <div class="field-info">
                 <?php
                 $value = empty($vv_db_password) ? ''
-                  : filter_var($vv_db_password,FILTER_SANITIZE_SPECIAL_CHARS);
+                  : filter_var($vv_db_password,FILTER_UNSAFE_RAW);
                 print $this->Form->input('password', array('size' => 50,'value' => $value));
                 ?>
               </div>

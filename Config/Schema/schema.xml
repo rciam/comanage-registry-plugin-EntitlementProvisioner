@@ -50,7 +50,9 @@
     <field name="enable_vo_whitelist" type="L" />
     <field name="vo_whitelist" type="X" size="4000" />
     <field name="vo_group_prefix" type="C" size="128" />
-    <field name="entitlement_format" type="C" size="256" />
+    <field name="entitlement_format" type="X" size="4000" />
+    <field name="entitlement_format_include_vowht" type="L" />
+    <field name="rciam_external_entitlements" type="L" />
     <field name="identifier_type" type="C" size="128" />
     <field name="created" type="T" />
     <field name="modified" type="T" />

@@ -30,7 +30,7 @@ class QueryConstructor {
     . " LEFT OUTER JOIN cm_co_person_roles AS ROLE ON cous.id = role.cou_id"
     . " AND role.co_person_role_id IS NULL"
     . " AND role.status = 'A'"
-    . " AND NOT role.deleted    AND role.co_person_id = members.co_person_id"
+    . " AND NOT role.deleted AND role.co_person_id = members.co_person_id"
     . " GROUP BY"
     . " groups.name";
     return $query;

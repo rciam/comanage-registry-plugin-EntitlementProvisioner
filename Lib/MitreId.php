@@ -16,13 +16,22 @@ class MitreId
    * @param  mixed $mitreId
    * @param  mixed $datasource
    * @param  string $table_name
+   * @param  array $coProvisioningTargetData
    * @return void
    */
-  public static function config($mitreId, $datasource, $table_name, $entitlement_format = NULL)
+  public static function config($mitreId, $datasource, $table_name, $coProvisioningTargetData = NULL, $user_profile = NULL)
   {
     $mitreId->useDbConfig = $datasource->configKeyName;
     $mitreId->useTable = $table_name;
-    $mitreId->entitlementFormat = $entitlement_format;
+    $mitreId->userProfile = $user_profile;
+    if(!is_null($coProvisioningTargetData)) {
+      foreach($coProvisioningTargetData as $key => $value) {
+        if(!in_array($key, array('id', 'deleted', 'created', 'modified', 'co_provisioning_target_id'))) {
+          $key = lcfirst(Inflector::camelize($key));
+          $mitreId->$key = $value;
+        }
+      }
+    }
   }
   
   /**
@@ -30,10 +39,13 @@ class MitreId
    *
    * @param  mixed $mitreId
    * @param  integer $user_id
-   * @return void
+   * @return array
    */
   public static function getCurrentEntitlements($mitreId, $user_id) {
     $current_entitlements = $mitreId->find('all', array('conditions' => array('MitreIdEntitlements.user_id' => $user_id)));
+    if(empty($current_entitlements)) {
+        return array();
+    }
     $current_entitlements = Hash::extract($current_entitlements, '{n}.MitreIdEntitlements.edu_person_entitlement');
     return $current_entitlements;
   }
@@ -48,18 +60,43 @@ class MitreId
    * @return void
    */
   public static function deleteOldEntitlements($mitreId, $user_id, $current_entitlements, $new_entitlements) {
+    $deleteEntitlements_white = array();
+    $deleteEntitlements_format = array();
+
+    // Find the candidate Entitlements
     $deleteEntitlements = array_diff($current_entitlements, $new_entitlements);
-    //Remove only those from check-in
-    if(!empty($mitreId->entitlementFormat)) {
-      $deleteEntitlements  = preg_grep($mitreId->entitlementFormat, $deleteEntitlements);
+    // There is nothing to delete
+    if(empty($deleteEntitlements)) {
+        return;
     }
-    CakeLog::write('debug', __METHOD__ . ':: entitlements to be deleted from MitreId' . var_export($deleteEntitlements, true), LOG_DEBUG);
+    //Remove the ones matching the Entitlement Format regex
+    if(!empty($mitreId->entitlementFormat)) {
+      $deleteEntitlements_format  = preg_grep($mitreId->entitlementFormat, $deleteEntitlements);
+    }
+    // Remove the ones constructed from the VO Whitelist
+    if($mitreId->entitlementFormatIncludeVowht
+       && !empty($mitreId->voWhitelist)) {
+        $vowhite_list = explode(",", $mitreId->voWhitelist);
+        foreach ($vowhite_list as $vo_name) {
+            $whitelist_regex = "/" . $mitreId->urnNamespace . ":group:" . $vo_name . ":(.*)#" . $mitreId->urnAuthority . "/i";
+            $deleteEntitlements_tmp  = preg_grep($whitelist_regex, $deleteEntitlements);
+            $deleteEntitlements_white = array_merge($deleteEntitlements_white, $deleteEntitlements_tmp);
+        }
+    }
+    // Calculate the final list of entitlements to be deleted
+    $deleteEntitlements = array_merge($deleteEntitlements_white, $deleteEntitlements_format);
+    CakeLog::write('debug', __METHOD__ . ':: entitlements to be deleted from MitreId: ' . print_r($deleteEntitlements, true), LOG_DEBUG);
     if(!empty($deleteEntitlements)) {
       //Delete
       $deleteEntitlementsParam = '(\'' . implode("','", $deleteEntitlements) . '\')';
       $mitreId->query('DELETE FROM user_edu_person_entitlement'
         . ' WHERE user_id=' . $user_id
         . ' AND edu_person_entitlement IN ' . $deleteEntitlementsParam);
+
+      if($mitreId->rciamExternalEntitlements) {
+        // Import the ones from third parties
+        MitreId::insertRciamSyncVomsEntitlements($mitreId, $user_id);
+      }
     }
   }
   
@@ -76,10 +113,10 @@ class MitreId
    * @return void
    */
   public static function deleteEntitlementsByCou($mitreId, $cou_name,  $urn_namespace, $urn_legacy, $urn_authority) {
-    if(strpos($mitreId->entitlementFormat,"/") == 0) {
+    if(!empty($mitreId->entitlementFormat)
+       && strpos($mitreId->entitlementFormat,"/") == 0) {
       $regex = explode('/', $mitreId->entitlementFormat)[1];
-    }
-    else {
+    } else {
       $regex = $mitreId->entitlementFormat;
     }
     
@@ -95,6 +132,11 @@ class MitreId
 
     CakeLog::write('debug', __METHOD__ . ':: delete entitlements by cou: ' . $query, LOG_DEBUG);
     $mitreId->query($query);
+
+    if($mitreId->rciamExternalEntitlements) {
+      // Import the ones from third parties
+      MitreId::insertRciamSyncVomsEntitlements($mitreId, $user_id);
+    }
   }
    
   /**
@@ -109,10 +151,12 @@ class MitreId
    * @return void
    */
   public static function deleteEntitlementsByGroup($mitreId, $group_name, $urn_namespace, $urn_legacy, $urn_authority, $vo_group_prefix) {
-    if(strpos($mitreId->entitlementFormat,"/") === 0)
+    if(!empty($mitreId->entitlementFormat)
+       && strpos($mitreId->entitlementFormat,"/") === 0) {
       $regex = explode('/', $mitreId->entitlementFormat)[1];
-    else
+    } else {
       $regex = $mitreId->entitlementFormat;
+    }
     
     $entitlement_regex = '^'.$urn_namespace.':group:'.$vo_group_prefix.':'. str_replace('+','\+', urlencode($group_name)) .'(.*)'; 
     if($urn_legacy) {
@@ -215,7 +259,7 @@ class MitreId
    */
   public static function insertNewEntitlements($mitreId, $user_id, $current_entitlements, $new_entitlements) {
     $insertEntitlements = array_diff($new_entitlements, $current_entitlements);
-    CakeLog::write('debug', __METHOD__ . ':: entitlements to be inserted to MitreId' . var_export($insertEntitlements, true), LOG_DEBUG);
+    CakeLog::write('debug', __METHOD__ . ':: entitlements to be inserted to MitreId' . print_r($insertEntitlements, true), LOG_DEBUG);
     if(!empty($insertEntitlements)) {
       //Insert
       $insertEntitlementsParam = '';
@@ -224,5 +268,73 @@ class MitreId
       }
       $mitreId->query('INSERT INTO user_edu_person_entitlement (user_id, edu_person_entitlement) VALUES ' . substr($insertEntitlementsParam, 0, -1));
     }
+    if($mitreId->rciamExternalEntitlements) {
+      // Import the ones from third parties
+      MitreId::insertRciamSyncVomsEntitlements($mitreId, $user_id);
+    }
   }
+
+  /**
+   * @param $mitreId
+   * @param $mitre_user_id
+   */
+  public static function insertRciamSyncVomsEntitlements($mitreId, $mitre_user_id)
+  {
+    // Fetch users Certificates
+    if(empty($mitreId->userProfile['Cert'])) {
+      return;
+    }
+    // Link to my table
+    $mdl_name = Inflector::camelize(MitreIdProvisionerRciamSyncVomsCfg::TableName);
+    // XXX Since this table uses the useDbConfig = "default" i can not use
+    // CAKEPHP's embeded PDO because it will always add the prefix cm_
+    $RciamModel = ClassRegistry::init($mdl_name);
+    // Get configuration
+    $vo_roles = !empty($mitreId->voRoles) ? explode(",", $mitreId->voRoles) : array();
+
+    $entitlements = array();
+    $user_id_entries = Hash::extract($mitreId->userProfile['Cert'], '{n}.Cert.subject');
+    // Construct the entitlements
+    foreach ($user_id_entries as $userId) {
+      $blacklist = '(\'' . implode("','", MitreIdProvisionerRciamSyncVomsCfg::VoBlackList) . '\')';
+      $vo_query =
+        "select t.vo_id"
+        . " from " . MitreIdProvisionerRciamSyncVomsCfg::TableName . " t"
+        . " where t.subject='" . $userId . "'"
+        . " and t.vo_id IS NOT NULL"
+        . " and t.vo_id NOT IN " . $blacklist;
+      $vos = $RciamModel->query($vo_query);
+      // Remove the unnecessary levels
+      $vo_names = Hash::extract($vos, '{n}.{n}.vo_id');
+      foreach($vo_names as $name) {
+        foreach ($vo_roles as $role) {
+          $entitlement =
+            $mitreId->urnNamespace                 // URN namespace
+            . ":group:" . urlencode($name) . ":"   // VO
+            . "role=" . $role                      // role
+            . "#" . $mitreId->urnAuthority;        // AA FQDN TODO
+          $entitlements[] = $entitlement;
+        }
+      }
+    }
+
+    // Push the entitlements
+    if (count($entitlements) > 0) {
+      $insertEntitlementsParam = '';
+      foreach ($entitlements as $ent_insert) {
+        $insertEntitlementsParam .= '(' . $mitre_user_id . ',\'' . $ent_insert . '\'),';
+      }
+      if(!empty($insertEntitlementsParam)) {
+        $insert_query =
+          'INSERT INTO user_edu_person_entitlement (user_id, edu_person_entitlement) VALUES '
+          . substr($insertEntitlementsParam, 0, -1)
+          . ' ON CONFLICT ON CONSTRAINT user_id_eduperson_entitlement_unique DO NOTHING';
+        // Push everything into the database
+        CakeLog::write('debug', __METHOD__ . ':: Insert third party entitlements: ' . $insert_query, LOG_DEBUG);
+        $mitreId->query($insert_query);
+      }
+    }
+
+  }
+
 }

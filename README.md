@@ -30,7 +30,7 @@ After the installation, you have to configure the plugin before using it.
   * `urnLegacy`: Optional, a boolean value for controlling whether to generate `eduPersonEntitlement` URN values using the legacy syntax. Defaults to `false`.
   * `voGroupPrefix`: Optional, defines a prefix for groups if any.
   * `entitlementFormat`: Required, defines the format of entitlements to be removed from other systems.
-  * `identifierType`: Required, the type of the user identifier.
+  * `VO Whitelist into Format`: Optional, a boolean value for controlling whether a regex expression will be created based to the VO Whitelist groups.The ones in the list will be eligible for deletion.
 
 ## License
 

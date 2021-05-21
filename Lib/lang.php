@@ -71,6 +71,10 @@ $cm_mitre_id_provisioner_texts['en_US'] = array(
   'pl.mitre_id_provisioner.identifier_type.desc'    => 'Define the User\'s Identifier Type',
   'pl.mitre_id_provisioner.enable.vowhitelist'      => 'Enable Vo Whitelist',
   'pl.mitre_id_provisioner.enable.vowhitelist.desc' => 'Define if Vo Whitelist is enabled',
+  'pl.mitre_id_provisioner.enable.formatvowht'      => 'Include VO Whitelist entries to Entitlement Format',
+  'pl.mitre_id_provisioner.enable.formatvowht.short'=> 'VO Whitelist into Format',
+  'pl.mitre_id_provisioner.enable.rciam_external'   => 'Construct Entitlements from RCIAM third Parties',
+  'pl.mitre_id_provisioner.enable.rciam_external.short'   => 'RCIAM Externals',
 
   //Database
   'er.mitre_id_provisioner.db.save'    => 'Save failed',

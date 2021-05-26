@@ -377,6 +377,9 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
         $data['user_deleted'] = TRUE;
         $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => Delete User with id:' . $data['co_person_id'], LOG_DEBUG);
       }
+      else if(strpos(array_keys($_REQUEST)[0],'/co_provisioning_targets') !== FALSE && !empty($data['co_person_id'])) { //Manually Provision user
+        $this->log(__METHOD__ . '::Provisioning action ' . $op . ' => Manually Provision User with id:' . $data['co_person_id'], LOG_DEBUG);
+      }
       else {
         return NULL;
       }
@@ -412,6 +415,7 @@ class CoMitreIdProvisionerTarget extends CoProvisionerPluginTarget
         }
         break;
       case ProvisioningActionEnum::CoPersonUpdated:
+      case ProvisioningActionEnum::CoPersonReprovisionRequested:
         $data['co_id'] = $provisioningData['Co']['id'];
         $data['co_person_identifier'] = $provisioningData['CoPerson']['actor_identifier'];
         $data['co_person_id'] = $provisioningData['CoPerson']['id'];

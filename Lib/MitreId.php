@@ -73,11 +73,15 @@ class MitreId
     if(!empty($mitreId->entitlementFormat)) {
       $deleteEntitlements_format  = preg_grep($mitreId->entitlementFormat, $deleteEntitlements);
     }
-    // Remove the ones constructed from the VO Whitelist
+    // Remove/Delete the ones constructed from the VO Whitelist
     if($mitreId->entitlementFormatIncludeVowht
        && !empty($mitreId->voWhitelist)) {
         $vowhite_list = explode(",", $mitreId->voWhitelist);
-        foreach ($vowhite_list as $vo_name) {
+        // Get all COU children of the the Whitelisted VOs and append
+        $vowhite_list_children = MitreId::getVoWitelistChildren($vowhite_list);
+        $vowhite_list = array_merge($vowhite_list, $vowhite_list_children);
+        foreach($vowhite_list as $vo_name) {
+            // Handle only the cou groups. Not the admin groups entitlements
             $whitelist_regex = "/" . $mitreId->urnNamespace . ":group:" . $vo_name . ":(.*)#" . $mitreId->urnAuthority . "/i";
             $deleteEntitlements_tmp  = preg_grep($whitelist_regex, $deleteEntitlements);
             $deleteEntitlements_white = array_merge($deleteEntitlements_white, $deleteEntitlements_tmp);
@@ -247,6 +251,35 @@ class MitreId
     CakeLog::write('debug', __METHOD__ . ':: delete all entitlements from mitreid for user :' . $user_id . 'with query' . $query, LOG_DEBUG);
     $mitreId->query($query);
   }
+
+  /**
+   * RCIAM Defines into the VO Whitelist ONLY the parent of a given COU hierarchy.
+   * This method will fetch the children, if any, of the whitelisted VOs
+   *
+   * @param array $vo_white_list
+   * @return [string]
+   */
+  public static function getVoWitelistChildren($vo_white_list) {
+    // Get list of id => cou_name
+    $args = array();
+    $args['conditions']['Cou.name'] = $vo_white_list;
+    $args['contain'] = false;
+    $args['fields'] = array('id', 'name');
+
+    $Cou = ClassRegistry::init('Cou');
+    $cou_list = $Cou->find('list', $args);
+
+    $cou_children = array();
+    foreach($cou_list as $id => $cou_name) {
+      if($Cou->childCount($id) > 0) {
+        $children = $Cou->children($id);
+        $children_names = Hash::extract($children, '{n}.Cou.name');
+        $cou_children = array_merge($cou_children, $children_names);
+      }
+    }
+
+    return $cou_children;
+  }
   
   /**
    * insertNewEntitlements
@@ -263,7 +296,7 @@ class MitreId
     if(!empty($insertEntitlements)) {
       //Insert
       $insertEntitlementsParam = '';
-      foreach ($insertEntitlements as $entitlement) {
+      foreach($insertEntitlements as $entitlement) {
         $insertEntitlementsParam .= '(' . $user_id . ',\'' . $entitlement . '\'),';
       }
       $mitreId->query('INSERT INTO user_edu_person_entitlement (user_id, edu_person_entitlement) VALUES ' . substr($insertEntitlementsParam, 0, -1));
@@ -295,7 +328,7 @@ class MitreId
     $entitlements = array();
     $user_id_entries = Hash::extract($mitreId->userProfile['Cert'], '{n}.Cert.subject');
     // Construct the entitlements
-    foreach ($user_id_entries as $userId) {
+    foreach($user_id_entries as $userId) {
       $blacklist = '(\'' . implode("','", MitreIdProvisionerRciamSyncVomsCfg::VoBlackList) . '\')';
       $vo_query =
         "select t.vo_id"
@@ -307,7 +340,7 @@ class MitreId
       // Remove the unnecessary levels
       $vo_names = Hash::extract($vos, '{n}.{n}.vo_id');
       foreach($vo_names as $name) {
-        foreach ($vo_roles as $role) {
+        foreach($vo_roles as $role) {
           $entitlement =
             $mitreId->urnNamespace                 // URN namespace
             . ":group:" . urlencode($name) . ":"   // VO
@@ -321,7 +354,7 @@ class MitreId
     // Push the entitlements
     if (count($entitlements) > 0) {
       $insertEntitlementsParam = '';
-      foreach ($entitlements as $ent_insert) {
+      foreach($entitlements as $ent_insert) {
         $insertEntitlementsParam .= '(' . $mitre_user_id . ',\'' . $ent_insert . '\'),';
       }
       if(!empty($insertEntitlementsParam)) {
